@@ -62,9 +62,13 @@ In order to perform this last point you can proceed as follows:
 
 2. Follow the prompts to input your AWS Access Key ID and Secret Access Key, which you'll find [on this page](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Fconsole.aws.amazon.com%2Fiam%2Fhome%3Fstate%3DhashArgs%2523security_credential%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fiam&forceMobileApp=0&code_challenge=0PnMq9kl_B7Z_WeFz9d2bJFPoYxEFMahW6Zw0shoJzo&code_challenge_method=SHA-256).
 
-If you are using the Educate account you can find this information in the vocareum web page clicking on the *Account Details* button.
+If you are using the Educate account you have also to provide the Session Token. You can find these information in the Vocareum AWS console login page by clicking on the *Account Details* button. 
 
 The configuration process creates a file at ~/.aws/credentials on MacOS and Linux or %UserProfile%\.aws\credentials on Windows, where your credentials are stored.
 
+Furthermore we suggest to set the following enviroment variables:
 
+    export AWS_ACCESS_KEY_ID="Your Access Key ID"
+    export AWS_SECRET_ACCESS_KEY="Your Secret Access Key"
+    export AWS_SESSION_TOKEN="Your Session Token"
 
