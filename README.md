@@ -6,7 +6,7 @@ In this project, we build a machine learning model to accurately predict whether
 
 Terraform is the infrastructure as code tool from HashiCorp. It is a tool for building, changing, and managing infrastructure in a safe, repeatable way. Operators and Infrastructure teams can use Terraform to manage environments with a configuration language called the HashiCorp Configuration Language (HCL) for human-readable, automated deployments.
 
-We use a dataset from IEEE-CIS Fraud Detection competition that is available on Kaggle. 
+We use a dataset from [IEEE-CIS Fraud Detection competition](https://www.kaggle.com/c/ieee-fraud-detection) that is available on Kaggle. 
 The purpose of the competition is predicting the probability that an online transaction is fraudulent, as denoted by the binary target isFraud.
 The data is broken into two files identity and transaction, which are joined by TransactionID. Not all transactions have corresponding identity information.
 
