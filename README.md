@@ -66,9 +66,4 @@ If you are using the Educate account you have also to provide the Session Token.
 
 The configuration process creates a file at ~/.aws/credentials on MacOS and Linux or %UserProfile%\.aws\credentials on Windows, where your credentials are stored.
 
-Furthermore we suggest to set the following environment variables:
-
-    export AWS_ACCESS_KEY_ID="Your Access Key ID"
-    export AWS_SECRET_ACCESS_KEY="Your Secret Access Key"
-    export AWS_SESSION_TOKEN="Your Session Token"
-
+### Terraform script for EMR
