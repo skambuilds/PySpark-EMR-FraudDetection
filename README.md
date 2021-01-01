@@ -34,7 +34,7 @@ The realization of this project can be divided into the following phases:
 
 - Terraform Installation
 - AWS Prerequisites
-- Terraform script for EMR
+- Terraform module for EMR
 - Rule modification for SSH
 - SSH Connection
 - PySpark Script Model
@@ -66,4 +66,10 @@ If you are using the Educate account you have also to provide the Session Token.
 
 The configuration process creates a file at ~/.aws/credentials on MacOS and Linux or %UserProfile%\.aws\credentials on Windows, where your credentials are stored.
 
-### Terraform script for EMR
+### Terraform module for EMR
+
+Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
+
+We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time.
+
+On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows.
