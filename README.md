@@ -51,6 +51,10 @@ To install Terraform see [the official guide](https://learn.hashicorp.com/tutori
 To replicate this project you will need:
 
 - An [AWS account](https://aws.amazon.com/it/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc) (if you are a student like us you can use an [Educate account](https://aws.amazon.com/it/education/awseducate/))
+- An [AWS EC2 key pair](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html) in order to execute the terraform module. You must provide the name of the key pair as descibed in the next section.
+- An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) with two directories inside it:
+	- **code/** - You have to upload the **/MLModel/fraud_detection_model.py** file in this directory;
+	- **input/** - You have to upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files in this other one.
 - The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) installed
 - Your AWS credentials configured locally.
 
