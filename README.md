@@ -69,15 +69,27 @@ The configuration process creates a file at **~/.aws/credentials** on MacOS and 
 ### Terraform module for EMR
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
 
-We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time.
+We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the module code in the **Terraform/** directory of this repo. In the list below we specify the data source and resource configurations we have used:
 
-On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows.
+- module.emr.aws_emr_cluster.cluster
+- module.emr.aws_iam_instance_profile.emr_ec2_instance_profile
+- module.emr.aws_iam_policy_document.ec2_assume_role
+- module.emr.aws_iam_policy_document.emr_assume_role
+- module.emr.aws_iam_role.emr_ec2_instance_profile
+- module.emr.aws_iam_role.emr_service_role
+- module.emr.aws_iam_role_policy_attachment.emr_ec2_instance_profile
+- module.emr.aws_iam_role_policy_attachment.emr_service_role
+- module.emr.aws_security_group.emr_master
+- module.emr.aws_security_group.emr_slave
+
+#### Module Description
+On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows. In the following we describe the module structure and then we provide a guide to execute it.
 
 ##### Inputs
-Inputs are variables we provide to a module in order for it to perform its task. The **Terraform/code/modules/emr/variables.tf** contains this setting.
+Inputs are variables we provide to a module in order for it to perform its task. The **Terraform/code/modules/emr/variables.tf** contains the variables declaration.
 
 ##### Configuration
-As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The **Terraform/code/modules/emr/main.tf** contains this setting.
+As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The **Terraform/code/modules/emr/main.tf** file contains this code.
 
 ###### Identity and Access Management (IAM)
 An [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) is a declarative way to assemble IAM policy objects in Terraform. Here, it is being used to create a trust relationship for an IAM role such that the EC2 service can assume the associated role and make AWS API calls on our behalf.
@@ -134,7 +146,7 @@ Security groups house firewall rules for compute resources in a cluster. This mo
 A special thing to note here is the usage of revoke_rules_on_delete. This setting ensures that all the remaining rules contained inside a security group are removed before deletion. This is important because EMR creates cyclic security group rules (rules with other security groups referenced), which prevent security groups from deleting gracefully.
 
 ###### EMR Cluster
-Last, but not least, is the aws_emr_cluster resource. As you can see, almost all the module variables are being used in this resource.
+Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_cluster) resource. As you can see, almost all the module variables are being used in this resource.
 
     resource "aws_emr_cluster" "cluster" {
       name           = "${var.name}"
@@ -178,21 +190,23 @@ Last, but not least, is the aws_emr_cluster resource. As you can see, almost all
 
 The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster. TASK instance groups are meant to be more ephemeral, so they don’t contain HDFS data, and by default don’t accommodate YARN (resource manager for Hadoop clusters) application master tasks.
 
-###### Outputs
+##### Outputs
 As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The **Terraform/code/modules/emr/outputs.tf** file contains this setting.
 
-##### Module Configuration
-Before instantiating the module, we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need set in the provider block is a version and a region. Exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
+#### Module Configuration
+In this section we clarify how to execute the module. The **Terraform/test.tf** file contains the module configuration. We describe its content in the following.
+
+First of all we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need to set in the provider block is a version and a region as shown below. Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
 
     provider "aws" {
         version = "3.21.0"
         region  = "us-east-1"
     }
 
-From there, we create a module block where the source must be set to the path of the terraform-aws-emr-cluster module which you can find in the **Terraform/code/** directory of this repo.
+From there, we create a module block where the source must be set to the path of the terraform-aws-emr-cluster module which you can find in the **Terraform/code/** directory of this repo. You have to update this module block with your own AWS parameters. 
 
     module "emr" {
-      source = "terraform-code-path"
+      source = "code/"
 
       name          = "cluster-name"
       vpc_id        = "vpc-id"
@@ -221,7 +235,24 @@ From there, we create a module block where the source must be set to the path of
       environment = "Test"
     }
 
-Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable.
+More specifically you must provide: 
+
+- `name` - Name of EMR cluster
+- `vpc_id` - ID of VPC meant to house cluster
+- `release_label` - EMR release version to use (default: `emr-5.8.0`)
+- `applications` - A list of EMR release applications (default: `["Spark"]`)
+- `configurations` - JSON array of EMR application configurations
+- `key_name` - EC2 Key pair name
+- `subnet_id` - Subnet used to house the EMR nodes
+- `instance_groups` - List of objects for each desired instance group (see secti on below)
+- `bootstrap_name` - Name for the bootstrap action
+- `bootstrap_uri` - S3 URI for the bootstrap action script
+- `bootstrap_args` - A list of arguments to the bootstrap action script (default: `[]`)
+- `log_uri` - S3 URI of the EMR log destination, must begin with `s3://` and end with trailing slashes
+- `project` - Name of project this cluster is for (default: `Unknown`)
+- `environment` - Name of environment this cluster is targeting (default: `Unknown`)
+
+Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable. You can add your configuration rules simply updating the **Terraform/configurations/default.json** file.
 
     provider "template" {
         version = "2.2.0"
@@ -231,7 +262,7 @@ Besides the EMR module, we also make use of a [template_file](https://registry.t
         template = file("configurations/default.json")
     }
     
-Finally, we want to add a few rules to the cluster security groups. For the head node security group, we want to open port 22 for SSH, and for both security groups we want to allow all egress traffic. As you can see, we’re able to do this via the available module.emr.master_security_group_id outputs.
+Finally, we want to add a few rules to the cluster security groups. For the head node security group, we want to open port 22 for SSH, and for both security groups we want to allow all egress traffic. As you can see, we’re able to do this via the available module.emr.master_security_group_id and module.emr.slave_security_group_id outputs.
 
     resource "aws_security_group_rule" "emr_master_ssh_ingress" {
       type              = "ingress"
@@ -259,3 +290,51 @@ Finally, we want to add a few rules to the cluster security groups. For the head
       cidr_blocks       = ["0.0.0.0/0"]
       security_group_id = module.emr.slave_security_group_id
     }
+
+#### Module Execution
+Now we can use Terraform to create and destroy the cluster.
+
+##### Initialize the directory
+When you create a new configuration — or check out an existing configuration from version control — you need to initialize the directory with `terraform init`.
+
+Terraform uses a plugin-based architecture to support hundreds of infrastructure and service providers. Initializing a configuration directory downloads and installs providers used in the configuration, which in this case is the `aws` provider. Subsequent commands will use local settings and data during initialization.
+
+	$ terraform init
+
+Terraform downloads the aws provider and installs it in a hidden subdirectory of the current working directory. The output shows which version of the plugin was installed.
+
+##### Format and validate the configuration
+
+The `terraform fmt` command automatically updates configurations in the current directory for easy readability and consistency.
+
+	$ terraform fmt
+
+Terraform will return the names of the files it formatted. In this case, the configuration file was already formatted correctly, so Terraform won't return any file names.
+
+If you are copying configuration snippets or just want to make sure your configuration is syntactically valid and internally consistent, the built in `terraform validate` command will check and report errors within modules, attribute names, and value types.
+
+	$ terraform validate
+
+If your configuration is valid, Terraform will return a success message.
+
+##### Create infrastructure
+
+First, we assemble a plan with the available configuration. This gives Terraform an opportunity to inspect the state of the world and determine exactly what it needs to do to make the world match our desired configuration.
+
+	$ terraform plan -out=test.tfplan
+	
+From here, we inspect the command output (the infrastructure equivalent of a diff) of all the data sources and resources Terraform plans to create, modify, or destroy. If that looks good, the next step is to apply the plan.
+
+	$ terraform apply test.tfplan
+
+	...
+
+	Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
+	
+##### Fraud Detection Model Execution as a Step with AWS CLI
+
+##### Destroy infrastructure
+
+After the step execution has been completed we want to clean up all the AWS resources so that we don’t run up a huge bill. This can be performed with the following command:
+
+	$ terraform destroy
