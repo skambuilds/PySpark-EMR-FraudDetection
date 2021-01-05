@@ -398,26 +398,11 @@ Firstly, we should apply five important tranformers/estimators from the PySpark.
 
 After applying them, the data will be ready to build a model.
 
-1. StringIndexer
-2. OneHotEncoderEstimator
-3. VectorAssembler
-4. LabelIndexer
-5. StandardScaler
-
-### StringIndexer
-The StringIndexer converts a single column to an index column. It simply replaces each category with a number. The most frequent values gets the first index value, which is (0.0), while the most rare ones takes the biggest index value.
-
-### OneHotEncoderEstimator
-We use “OneHotEncoderEstimator” to convert categorical variables into binary SparseVectors. With OneHotEncoder, we create a dummy variable for each value in categorical columns and give it a value 1 or 0.
-
-### VectorAssembler
-Transform all features into a vector using VectorAssembler.
-
-### LabelIndexer
-Convert label into label indices using the StringIndexer. “No” has been assigned with the value “0.0”, “yes ”is assigned with the value “1.0”.
-
-### StandardScaler
-Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardize features by removing the mean and scaling to unit variance.
+1. *StringIndexer* - Converts a single column to an index column. It simply replaces each category with a number. The most frequent values gets the first index value, which is (0.0), while the most rare ones takes the biggest index value.
+2. *OneHotEncoderEstimator* - Convert categorical variables into binary SparseVectors. With OneHotEncoder, we create a dummy variable for each value in categorical columns and give it a value 1 or 0.
+3. *VectorAssembler* - Transforms all features into a vector using VectorAssembler.
+4. *LabelIndexer* - Converts label into label indices using the StringIndexer. “No” has been assigned with the value “0.0”, “yes ”is assigned with the value “1.0”.
+5. *StandardScaler* - Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardize features by removing the mean and scaling to unit variance.
 
 ### Model Pipeline
 We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
