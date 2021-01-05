@@ -44,7 +44,7 @@ Let's dive into them.
 
 ### Terraform Installation
 
-To install Terraform see [the official guide](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) in the HashiCorp website.
+To install Terraform please refer to [the official guide](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) in the HashiCorp website.
 
 ### AWS Prerequisites
 
@@ -52,9 +52,10 @@ To replicate this project you will need:
 
 - An [AWS account](https://aws.amazon.com/it/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc) (if you are a student like us you can use an [Educate account](https://aws.amazon.com/it/education/awseducate/))
 - An [AWS EC2 key pair](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html) in order to execute the terraform module. You must provide the name of the key pair as descibed in the next section.
-- An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) with two directories inside it:
+- An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) with three directories inside it:
 	- **code/** - You have to upload the **/MLModel/fraud_detection_model.py** file in this directory;
 	- **input/** - You have to upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files in this other one.
+	- **logs/** - This will be the EMR cluster log destination
 - The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) installed
 - Your AWS credentials configured locally.
 
@@ -196,6 +197,16 @@ Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/prov
         Project     = "${var.project}"
         Environment = "${var.environment}"
       }
+      
+      step {
+    	action_on_failure = "${var.action_on_failure}"
+    	name   = "${var.step_name}"
+
+	hadoop_jar_step {
+      	  jar  = "${var.step_jar_path}"
+      	  args = "${var.step_args}"
+    	}
+      }
     }
 
 The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster. TASK instance groups are meant to be more ephemeral, so they don’t contain HDFS data, and by default don’t accommodate YARN (resource manager for Hadoop clusters) application master tasks.
@@ -240,27 +251,53 @@ From there, we create a module block in order to call the emr module we describe
       bootstrap_uri  = "s3://elasticmapreduce/bootstrap-actions/run-if"
       bootstrap_args = ["instance.isMaster=true", "echo running on master node"]
 
-      log_uri     = "logs-bucket-path"
+      log_uri     = "s3://your-bucket-name/logs/"
       project     = "FraudDetection"
       environment = "Test"
+      
+      action_on_failure = "CONTINUE"
+      step_name = "FraudDetectionModel"
+      step_jar_path = "command-runner.jar"
+
+      step_args = [
+    	"spark-submit",
+    	"--deploy-mode",
+    	"client",
+    	"--master",
+    	"yarn",
+    	"--conf",
+    	"spark.yarn.submit.waitAppCompletion=true",
+    	"--executor-memory",
+    	"2g",
+    	"s3://your-bucket-name/code/fraud_detection_complete.py"
+      ]
     }
 
-More specifically you must provide: 
+More specifically you have to provide: 
 
 - `name` - Name of the EMR cluster
 - `vpc_id` - ID of VPC meant to hold the cluster
-- `release_label` - EMR release version to use (default: `emr-5.32.0`)
-- `applications` - A list of EMR release applications (default: `["Spark"]`)
-- `configurations` - JSON array of EMR application configurations
-- `key_name` - EC2 Key pair name
+- `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
 - `subnet_id` - Subnet used to house the EMR nodes
-- `instance_groups` - List of objects for each desired instance group (see secti on below)
+- `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
+- `step_args` - List of command line arguments passed to the JAR file's main function when executed (you just have to put "your-bucket-name" in the s3 model code path)
+
+For the following ones we have already set up the right values for you:
+- `release_label` - EMR release version to use
+- `applications` - A list of EMR release applications
+- `configurations` - JSON array of EMR application configurations
+- `instance_type` - Instance type for the master and core instance groups
+- `master_instance_count` - Number of master instances
+- `core_instance_count` - Number of core instances
 - `bootstrap_name` - Name for the bootstrap action
 - `bootstrap_uri` - S3 URI for the bootstrap action script
-- `bootstrap_args` - A list of arguments to the bootstrap action script (default: `[]`)
-- `log_uri` - S3 URI of the EMR log destination, must begin with `s3://` and end with trailing slashes
-- `project` - Name of project this cluster is for (default: `Unknown`)
-- `environment` - Name of environment this cluster is targeting (default: `Unknown`)
+- `bootstrap_args` - A list of arguments to the bootstrap action script
+- `project` - Name of project this cluster is for
+- `environment` - Name of environment this cluster is targeting
+- `action_on_failure` - The action to take if the step fails. Valid values: `TERMINATE_JOB_FLOW`, `TERMINATE_CLUSTER`, `CANCEL_AND_WAIT`, and `CONTINUE`
+- `step_name` - The name of the step
+- `step_jar_path` - Path to a JAR file run during the step
+
 
 Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable. You can add your configuration rules simply updating the **Terraform/configurations/default.json** file.
 
@@ -345,7 +382,7 @@ From here, we inspect the command output (the infrastructure equivalent of a dif
 	
 ##### Monitoring the Step Execution
 
-You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster with the name you insert in the **test.tf** terraform configuration file. Finally go into the step tab to control its status.
+You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status.
 
 ##### Destroy infrastructure
 
