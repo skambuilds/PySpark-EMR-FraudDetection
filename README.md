@@ -34,19 +34,22 @@ The realization of this project can be divided into the following phases:
 
 - Terraform Installation
 - AWS Prerequisites
-- Terraform module for EMR
+- Terraform EMR Module	
+	- Module Description
+	- Module Configuration
+	- Module Execution	
 - Rule modification for SSH
 - SSH Connection
-- PySpark Script Model
+- Fraud Detection Model Description
 - Step execution
 
 Let's dive into them.
 
-### Terraform Installation
+## Terraform Installation
 
 To install Terraform please refer to [the official guide](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) in the HashiCorp website.
 
-### AWS Prerequisites
+## AWS Prerequisites
 
 To replicate this project you will need:
 
@@ -71,7 +74,7 @@ If you are using the Educate account you have also to provide the Session Token.
 
 The configuration process creates a file at **~/.aws/credentials** on MacOS and Linux or **%UserProfile%\.aws\credentials** on Windows, where your credentials are stored.
 
-### Terraform module for EMR
+## Terraform EMR Module
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
 
 We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the **Terraform/** directory of this repo. This directory has been organized as follows:
@@ -93,16 +96,16 @@ In the list below we specify the data source and resource configurations we have
 - module.emr.aws_security_group.emr_master
 - module.emr.aws_security_group.emr_slave
 
-#### Module Description
+### Module Description
 On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows. In the following we describe the module structure and then we provide a guide to execute it.
 
-##### Inputs
+#### Inputs
 Inputs are variables we provide to a module in order for it to perform its task. The **Terraform/emr-module/variables.tf** contains the variables declaration.
 
-##### Configuration
+#### Configuration
 As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The **Terraform/emr-module/main.tf** file contains this code.
 
-###### Identity and Access Management (IAM)
+##### Identity and Access Management (IAM)
 An [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) is a declarative way to assemble IAM policy objects in Terraform. Here, it is being used to create a trust relationship for an IAM role such that the EC2 service can assume the associated role and make AWS API calls on our behalf.
 
     data "aws_iam_policy_document" "emr_assume_role" {
@@ -140,7 +143,7 @@ Finally, there is [aws_iam_instance_profile](https://registry.terraform.io/provi
     }
 
 
-###### Security groups
+##### Security groups
 Security groups house firewall rules for compute resources in a cluster. This module creates two security groups without rules. Rules are automatically populated by the EMR service (to support cross-node communication), but you can also grab a handle to the security group via its ID and add more rules through the [aws_security_group_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) resource.
 
     resource "aws_security_group" "emr_master" {
@@ -156,8 +159,8 @@ Security groups house firewall rules for compute resources in a cluster. This mo
     
 A special thing to note here is the usage of revoke_rules_on_delete. This setting ensures that all the remaining rules contained inside a security group are removed before deletion. This is important because EMR creates cyclic security group rules (rules with other security groups referenced), which prevent security groups from deleting gracefully.
 
-###### EMR Cluster
-Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_cluster) resource. As you can see, almost all the module variables are being used in this resource.
+##### EMR Cluster
+Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_cluster) resource. As you can see, almost all the module variables are being used in this resource. Here we have also specified a step section in order to execute the PySpark script which contains our fraud detection model algorithm.
 
     resource "aws_emr_cluster" "cluster" {
       name           = "${var.name}"
@@ -201,20 +204,20 @@ Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/prov
       step {
     	action_on_failure = "${var.action_on_failure}"
     	name   = "${var.step_name}"
-
-	hadoop_jar_step {
+	
+    	hadoop_jar_step {
       	  jar  = "${var.step_jar_path}"
       	  args = "${var.step_args}"
     	}
       }
     }
 
-The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster. TASK instance groups are meant to be more ephemeral, so they don’t contain HDFS data, and by default don’t accommodate YARN (resource manager for Hadoop clusters) application master tasks.
+The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster.
 
-##### Outputs
+#### Outputs
 As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The **Terraform/emr-module/outputs.tf** file contains this setting.
 
-#### Module Configuration
+### Module Configuration
 In this section we clarify how to configure the module. The **Terraform/test.tf** file contains the Terraform configuration. We describe its content in the following.
 
 First of all we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need to set in the provider block is a version and a region as shown below. Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
@@ -224,7 +227,7 @@ First of all we want to make sure that our AWS provider is properly configured. 
         region  = "us-east-1"
     }
 
-From there, we create a module block in order to call the emr module we described previously. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the **Terraform/emr-module/** directory of this repo.  
+From there, we create a module block in order to call the emr module we described previously. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the **Terraform/emr-module/** directory of this repo.
 
     module "emr" {
       source = ".emr-module/"
@@ -280,7 +283,7 @@ More specifically you have to provide:
 - `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
 - `subnet_id` - Subnet used to house the EMR nodes
 - `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
-- `step_args` - List of command line arguments passed to the JAR file's main function when executed (you just have to put "your-bucket-name" in the s3 model code path)
+- `step_args` - List of command line arguments passed to the JAR file's main function when executed. In this case we use the spark-submit in order to execute the fraud detection model algorithm (you just have to put "your-bucket-name" in the s3 model code path)
 
 For the following ones we have already set up the right values for you:
 - `release_label` - EMR release version to use
@@ -297,7 +300,6 @@ For the following ones we have already set up the right values for you:
 - `action_on_failure` - The action to take if the step fails. Valid values: `TERMINATE_JOB_FLOW`, `TERMINATE_CLUSTER`, `CANCEL_AND_WAIT`, and `CONTINUE`
 - `step_name` - The name of the step
 - `step_jar_path` - Path to a JAR file run during the step
-
 
 Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable. You can add your configuration rules simply updating the **Terraform/configurations/default.json** file.
 
@@ -338,12 +340,12 @@ Finally, we want to add a few rules to the cluster security groups. For the head
       security_group_id = module.emr.slave_security_group_id
     }
 
-#### Module Execution
+### Module Execution
 Now we can use Terraform to create and destroy the cluster. Clone this repo and navigate into the **Terraform/** directory. Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file.
 
 	$ cd Terraform/
 
-##### Initialize the directory
+#### Initialize the directory
 When you create a new configuration — or check out an existing configuration from version control — you need to initialize the directory with `terraform init`.
 
 Terraform uses a plugin-based architecture to support hundreds of infrastructure and service providers. Initializing a configuration directory downloads and installs providers used in the configuration, which in this case is the `aws` provider. Subsequent commands will use local settings and data during initialization.
@@ -352,7 +354,7 @@ Terraform uses a plugin-based architecture to support hundreds of infrastructure
 
 Terraform downloads the aws provider and installs it in a hidden subdirectory of the current working directory. The output shows which version of the plugin was installed.
 
-##### Format and validate the configuration
+#### Format and validate the configuration
 
 The `terraform fmt` command automatically updates configurations in the current directory for easy readability and consistency.
 
@@ -366,7 +368,7 @@ If you are copying configuration snippets or just want to make sure your configu
 
 If your configuration is valid, Terraform will return a success message.
 
-##### Create infrastructure
+#### Create Infrastructure
 
 First, we assemble a plan with the available configuration. This gives Terraform an opportunity to inspect the state of the world and determine exactly what it needs to do to make the world match our desired configuration.
 
@@ -380,12 +382,46 @@ From here, we inspect the command output (the infrastructure equivalent of a dif
 
 	Apply complete! Resources: 11 added, 0 changed, 0 destroyed.
 	
-##### Monitoring the Step Execution
+#### Monitoring the Step Execution
 
 You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status.
 
-##### Destroy infrastructure
+#### Destroy Infrastructure
 
 After the step execution has been completed we want to clean up all the AWS resources. This can be performed with the following command:
 
 	$ terraform destroy
+
+## Fraud Detection Model Description
+
+Firstly, we should apply five important tranformers/estimators from the PySpark.ml library before we start to build model.
+
+After applying them, the data will be ready to build a model.
+
+1. StringIndexer
+2. OneHotEncoderEstimator
+3. VectorAssembler
+4. LabelIndexer
+5. StandardScaler
+
+### StringIndexer
+The StringIndexer converts a single column to an index column. It simply replaces each category with a number. The most frequent values gets the first index value, which is (0.0), while the most rare ones takes the biggest index value.
+
+### OneHotEncoderEstimator
+We use “OneHotEncoderEstimator” to convert categorical variables into binary SparseVectors. With OneHotEncoder, we create a dummy variable for each value in categorical columns and give it a value 1 or 0.
+
+### VectorAssembler
+Transform all features into a vector using VectorAssembler.
+
+### LabelIndexer
+Convert label into label indices using the StringIndexer. “No” has been assigned with the value “0.0”, “yes ”is assigned with the value “1.0”.
+
+### StandardScaler
+Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardize features by removing the mean and scaling to unit variance.
+
+### Model Pipeline
+We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
+
+The following code is taken from databricks’ official site. First of all we determine categorical columns. Then, it indexes each categorical column using the StringIndexer. After that, it converts the indexed categories into one-hot encoded variables. The resulting output has the binary vectors appended to the end of each row. We use the StringIndexer again to encode our labels to label indices. Next, we use the VectorAssembler to combine all the feature columns into a single vector column. As a final step, we use StandardScaler to distribute our features normally.
+
+Run the stages as a Pipeline. This puts the data through all of the feature transformations we described in a single call.
