@@ -56,8 +56,8 @@ To replicate this project you will need:
 - An [AWS account](https://aws.amazon.com/it/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc) (if you are a student like us you can use an [Educate account](https://aws.amazon.com/it/education/awseducate/))
 - An [AWS EC2 key pair](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html) in order to execute the terraform module. You must provide the name of the key pair as descibed in the next section.
 - An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html) with three directories inside it:
-	- **code/** - You have to upload the **/MLModel/fraud_detection_model.py** file in this directory;
-	- **input/** - You have to upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files in this other one.
+	- **code/** - Will contain the PySpark fraud detection algorithm
+	- **input/** - Will contain the csv files of the kaggle competition
 	- **logs/** - This will be the EMR cluster log destination
 - The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) installed
 - Your AWS credentials configured locally.
@@ -73,6 +73,15 @@ In order to perform this last point you can proceed as follows:
 If you are using the Educate account you have also to provide the Session Token. You can find these information in the Vocareum AWS console login page by clicking on the *Account Details* button. 
 
 The configuration process creates a file at **~/.aws/credentials** on MacOS and Linux or **%UserProfile%\.aws\credentials** on Windows, where your credentials are stored.
+
+## Setting Up the Bucket
+
+1. Clone this repo on your local machine.
+2. Open the **/MLModel/fraud_detection_model.py** file with a text editor and insert the name of the bucket you created previously in the following variable:
+	
+		bucket_name = 's3://your-bucket-name'
+3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the **/MLModel/fraud_detection_model.py** file you have just modified.
+4. Go to the **input/** directory of your bucket and upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files.
 
 ## Terraform EMR Module
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
@@ -341,7 +350,7 @@ Finally, we want to add a few rules to the cluster security groups. For the head
     }
 
 ### Module Execution
-Now we can use Terraform to create and destroy the cluster. Clone this repo and navigate into the **Terraform/** directory. Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file.
+Now you can use Terraform to create and destroy the cluster. First of all you have to navigate into the **Terraform/** directory of your local copy of this repo. Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file.
 
 	$ cd Terraform/
 
@@ -384,7 +393,7 @@ From here, we inspect the command output (the infrastructure equivalent of a dif
 	
 #### Monitoring the Step Execution
 
-You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status.
+You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status. You can inspect the model result by clicking on "view logs" and selecting the **stdout** log file.
 
 #### Destroy Infrastructure
 
@@ -394,15 +403,39 @@ After the step execution has been completed we want to clean up all the AWS reso
 
 ## Fraud Detection Model Description
 
+In this section we are going to describe the structure of our fraud detection algorithm. The code has been organized into five main parts:
+1. Competition Data Loading from the S3 Bucket
+2. Feature Selection
+2. Feature engineering
+3. Dataset splitting
+4. Model training and execution
+5. Model evaluation
+
+### Competition Data Loading from the S3 Bucket
+
+In this phase we simply load the data csv files from the S3 bucket and we join the *transaction dataset* with the *identity dataset*.
+
+	train_ts = spark.read.csv(train_ts_location, header = True, inferSchema = True)
+	train_id = spark.read.csv(train_id_location, header = True, inferSchema = True)
+	train_df = train_ts.join(train_id, "TransactionID", how='left')
+	
+	test_ts = spark.read.csv(test_ts_location, header = True, inferSchema = True)
+	test_id = spark.read.csv(test_id_location, header = True, inferSchema = True)
+	test_df = test_ts.join(test_id, "TransactionID", how='left')
+
+### Feature Selection
+
+
+
 Firstly, we should apply five important tranformers/estimators from the PySpark.ml library before we start to build model.
 
 After applying them, the data will be ready to build a model.
 
-1. *StringIndexer* - Converts a single column to an index column. It simply replaces each category with a number. The most frequent values gets the first index value, which is (0.0), while the most rare ones takes the biggest index value.
-2. *OneHotEncoderEstimator* - Convert categorical variables into binary SparseVectors. With OneHotEncoder, we create a dummy variable for each value in categorical columns and give it a value 1 or 0.
-3. *VectorAssembler* - Transforms all features into a vector using VectorAssembler.
-4. *LabelIndexer* - Converts label into label indices using the StringIndexer. “No” has been assigned with the value “0.0”, “yes ”is assigned with the value “1.0”.
-5. *StandardScaler* - Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardize features by removing the mean and scaling to unit variance.
+1. *StringIndexer* - Converts a single column to an index column. It simply replaces each category with a number. The most frequent values gets the first index value, which is (0.0), while the most rare ones take the biggest index value.
+2. *OneHotEncoderEstimator* - Converts categorical variables into binary SparseVectors. With OneHotEncoder, we create a dummy variable for each value in categorical columns and give it a value 1 or 0.
+3. *VectorAssembler* - Transforms all features into a vector.
+4. *LabelIndexer* - Converts label into label indices using the StringIndexer. “No” has been assigned with the value "0.0", "yes" is assigned with the value "1.0".
+5. *StandardScaler* - Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardizes features by removing the mean and scaling to unit variance.
 
 ### Model Pipeline
 We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
