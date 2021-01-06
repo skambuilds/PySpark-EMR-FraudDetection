@@ -37,11 +37,9 @@ The realization of this project can be divided into the following phases:
 - Terraform EMR Module	
 	- Module Description
 	- Module Configuration
-	- Module Execution	
-- Rule modification for SSH
-- SSH Connection
+	- Module Execution
 - Fraud Detection Model Description
-- Step execution
+- Results and Conclusions
 
 Let's dive into them.
 
@@ -407,8 +405,8 @@ In this section we are going to describe the structure of our fraud detection al
 1. Competition Data Loading from the S3 Bucket
 2. Feature Selection
 3. Feature Engineering
-4. Model training and execution
-5. Model evaluation
+4. Model Training and Execution
+5. Model Evaluation
 
 ### Competition Data Loading from the S3 Bucket
 In this phase we simply load the data csv files from the S3 bucket and we join the *transaction dataset* with the *identity dataset*.
@@ -485,7 +483,11 @@ Finally, we applied five important tranformers/estimators from the PySpark.ml li
 4. *LabelIndexer* - Converts label into label indices using the StringIndexer. “No” has been assigned with the value "0.0", "yes" is assigned with the value "1.0".
 5. *StandardScaler* - Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardizes features by removing the mean and scaling to unit variance.
 
-After applying them, the data will be ready to build the model.
+After applying them, the data will be ready to build the model.	
+
+#### Model Pipeline
+We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
+First of all we determine categorical columns. Then, it indexes each categorical column using the StringIndexer. After that, it converts the indexed categories into one-hot encoded variables. The resulting output has the binary vectors appended to the end of each row. We use the StringIndexer again to encode our labels to label indices. Next, we use the VectorAssembler to combine all the feature columns into a single vector column. As a final step, we use StandardScaler to distribute our features normally.
 
 	stages = []
 	
@@ -503,10 +505,7 @@ After applying them, the data will be ready to build the model.
         scaler = StandardScaler(inputCol="vectorized_features", outputCol="features")
         stages += [scaler]
 
-### Model Pipeline
-We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
-
-First of all we determine categorical columns. Then, it indexes each categorical column using the StringIndexer. After that, it converts the indexed categories into one-hot encoded variables. The resulting output has the binary vectors appended to the end of each row. We use the StringIndexer again to encode our labels to label indices. Next, we use the VectorAssembler to combine all the feature columns into a single vector column. As a final step, we use StandardScaler to distribute our features normally.
+Run the stages as a Pipeline. This puts the data through all of the feature transformations we described in a single call.
 
 	pipeline = Pipeline(stages = stages)
 	pipelineModel = pipeline.fit(train_transaction)
@@ -514,4 +513,85 @@ First of all we determine categorical columns. Then, it indexes each categorical
 	selectedCols = ['label', 'features'] + cols
 	df = df.select(selectedCols)    
 
-Run the stages as a Pipeline. This puts the data through all of the feature transformations we described in a single call.
+### Model Training and Execution
+The first step of this phase has been splitting the data into training and test sets (30% held out for testing).
+
+	train, test = df.randomSplit([0.7, 0.3], seed=2021)
+	print("Training Dataset Count: " + str(train.count()))
+	print("Test Dataset Count: " + str(test.count()))
+
+Then we built two functions, the first one has the task of train the model using the training set and then execute it using the test set. The resulting predictions will be evaluted by the second function which performs the model evalutation.
+
+	def classifier_executor(classifier, train, test):
+		model = classifier.fit(train)
+		predictions = model.transform(test)
+		predictions.select('TransactionID', 'label', 'rawPrediction', 'prediction', 'probability').show(10)
+		metrics_calc(predictions)
+	    
+	def metrics_calc(predictions):
+		evaluator = BinaryClassificationEvaluator()
+		print("Test Area Under ROC: " + str(evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})))
+		#print('Test Area Under ROC', evaluator.evaluate(predictions))
+		
+		numSuccesses = predictions.where("""(prediction = 0 AND isFraud = 'no') OR (prediction = 1 AND (isFraud = 'yes'))""").count()
+		numInspections = predictions.count()
+		
+		print('There were', numInspections, 'inspections and there were', numSuccesses, 'successful predictions')
+		print('This is a', str((float(numSuccesses) / float(numInspections)) * 100) + '%', 'success rate')
+		
+		true_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='yes')).count()
+		false_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
+		true_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='no')).count()
+		false_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
+		
+		print("True positive: " + str(true_positive)) 
+		print("False positive: " + str(false_positive)) 
+		print("True negative: " + str(true_negative)) 
+		print("False negative: " + str(false_negative)) 
+		
+		sensitivity = true_positive/(true_positive+false_negative)
+		fallout = false_positive/(false_positive+true_negative)
+		specificity = true_negative/(true_negative+false_positive)
+		miss_rate = false_negative/(false_negative+true_positive)
+		
+		print("Sensitivity: " + str(sensitivity))
+		print("Fallout: " + str(fallout))
+		print("Specificity: " + str(specificity))
+		print("Miss_rate: " + str(miss_rate))
+
+For this project, we have chosen to study the predictive performance of two different classification algorithms:
+1. Logistic Regression
+2. Decision Trees
+
+In the following we show the classifiers initialization and the call to the `classifier_executor` function described previously:
+
+	## LR
+	if logReg:
+		classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
+		classifier_executor(classifier, train, test)
+	
+	# DT
+	if decTree:
+		classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
+		classifier_executor(classifier, train, test)
+		
+### Model Evaluation
+
+In order to perform the model evaluation the `classifier_executor` function calls the `metrics_calc`. Here we use the BinaryClassificationEvaluator to evaluate our models. 
+Note that the default metric for the BinaryClassificationEvaluator is areaUnderROC. ROC is a probability curve and AUC represents degree or measure of separability. ROC tells how much model is capable of distinguishing between classes. Higher the AUC, better the model is at distinguishing between patients with diabetes and no diabetes.
+
+#### Classification Evaluation Metrics
+
+In this last function we also perform the calculation of some metrics. When making predictions on events we can get four type of results:
+1. True Positives: TP
+2. True Negatives: TN
+3. False Positives: FP
+4. False Negatives: FN
+
+Combining these results we compute the following metrics:
+- Sensitivity
+- Fallout
+- Specificity
+- Missreate
+
+## Results and Conclusions
