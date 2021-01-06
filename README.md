@@ -406,13 +406,11 @@ After the step execution has been completed we want to clean up all the AWS reso
 In this section we are going to describe the structure of our fraud detection algorithm. The code has been organized into five main parts:
 1. Competition Data Loading from the S3 Bucket
 2. Feature Selection
-2. Feature engineering
-3. Dataset splitting
+3. Feature Engineering
 4. Model training and execution
 5. Model evaluation
 
 ### Competition Data Loading from the S3 Bucket
-
 In this phase we simply load the data csv files from the S3 bucket and we join the *transaction dataset* with the *identity dataset*.
 
 	train_ts = spark.read.csv(train_ts_location, header = True, inferSchema = True)
@@ -424,22 +422,96 @@ In this phase we simply load the data csv files from the S3 bucket and we join t
 	test_df = test_ts.join(test_id, "TransactionID", how='left')
 
 ### Feature Selection
+Exploring the dataset we noticed that there were so many NAN values, consequently we take inspiration from this [Exploratory Data Analysis](https://www.kaggle.com/cdeotte/eda-for-columns-v-and-id) to perform the feature selection. The authors analyzed all the columns of train_transaction.csv to determine which columns are related by the number of NANs present. They see that D1 relates to a subset of V281 thru V315, and D11 relates to V1 thru V11. Also we find groups of Vs with similar NAN structure. And they see that M1, M2, M3 related and M8, M9 related.
 
+The V columns appear to be redundant and correlated. Therefore for each block of V columns with similar NAN structure, we could find subsets within the block that are correlated. Then we can replace the entire block with one column from each subset.
 
+For example in block V1-V11, we see that the subsets [[1],[2,3],[4,5],[6,7],[8,9],[10,11]] exist and we can choose [1, 3, 4, 6, 8, 11] to represent the V1-V11 block without losing that much information. Here below the sets of V columns we decide to preserve:
 
-Firstly, we should apply five important tranformers/estimators from the PySpark.ml library before we start to build model.
+	v =  [1, 3, 4, 6, 8, 11]
+	v += [13, 14, 17, 20, 23, 26, 27, 30]
+	v += [36, 37, 40, 41, 44, 47, 48]
+	v += [54, 56, 59, 62, 65, 67, 68, 70]
+	v += [76, 78, 80, 82, 86, 88, 89, 91]
+	
+	v += [96, 98, 99, 104] 
+	v += [107, 108, 111, 115, 117, 120, 121, 123] 
+	v += [124, 127, 129, 130, 136]
+	
+	v += [138, 139, 142, 147, 156, 162]
+	v += [165, 160, 166]
+	v += [178, 176, 173, 182]
+	v += [187, 203, 205, 207, 215]
+	v += [169, 171, 175, 180, 185, 188, 198, 210, 209]
+	v += [218, 223, 224, 226, 228, 229, 235]
+	v += [240, 258, 257, 253, 252, 260, 261]
+	v += [264, 266, 267, 274, 277]
+	v += [220, 221, 234, 238, 250, 271]
+	
+	v += [294, 284, 285, 286, 291, 297] 
+	v += [303, 305, 307, 309, 310, 320] 
+	v += [281, 283, 289, 296, 301, 314]
+	v += [332, 325, 335, 338] 
+	cols += ['V'+str(x) for x in v]
 
-After applying them, the data will be ready to build a model.
+### Feature Engineering
+The preliminary step we made in order to complete this phase was a classification of the dataset columns based on their data type. We built two main sets:
+1. Categorical columns
+2. Non categorical columns
+	
+Then we performed the following tasks:
+- String casting of the categorical columns values
 
+		for col in categoricalColumns:
+			train_transaction = train_transaction.withColumn(col, train_transaction[col].cast(StringType()))
+    
+- Null values substitution for categorical and non categorical columns
+
+		for _col in categoricalColumns:
+			train_transaction = train_transaction.withColumn(_col, when(train_transaction[_col].isNull(), 'none').otherwise(train_transaction[_col]))
+		
+		for _col in nonCategoricalColumns:
+			train_transaction = train_transaction.withColumn(_col, when(train_transaction[_col].isNull(), 0).otherwise(train_transaction[_col]))
+			
+- Target variable (isFraud) values convertion from 0 to “No”, and from 1 to “Yes”
+
+		trgStrConv_udf = udf(lambda val: "no" if val==0 else "yes", StringType())
+		train_transaction=train_transaction.withColumn("isFraud", trgStrConv_udf('isFraud'))
+
+Finally, we applied five important tranformers/estimators from the PySpark.ml library in order to perform the hot encoding:
 1. *StringIndexer* - Converts a single column to an index column. It simply replaces each category with a number. The most frequent values gets the first index value, which is (0.0), while the most rare ones take the biggest index value.
 2. *OneHotEncoderEstimator* - Converts categorical variables into binary SparseVectors. With OneHotEncoder, we create a dummy variable for each value in categorical columns and give it a value 1 or 0.
 3. *VectorAssembler* - Transforms all features into a vector.
 4. *LabelIndexer* - Converts label into label indices using the StringIndexer. “No” has been assigned with the value "0.0", "yes" is assigned with the value "1.0".
 5. *StandardScaler* - Standardization of a dataset is a common requirement for many machine learning estimators: they might behave badly if the individual features do not look like more or less normally distributed data (e.g. Gaussian with 0 mean and unit variance). StandardScaler standardizes features by removing the mean and scaling to unit variance.
 
+After applying them, the data will be ready to build the model.
+
+	stages = []
+	
+	for categoricalCol in categoricalColumns:
+        	stringIndexer = StringIndexer(inputCol = categoricalCol, outputCol = categoricalCol + 'Index')
+        	encoder = OneHotEncoderEstimator(inputCols=[stringIndexer.getOutputCol()], outputCols=[categoricalCol + "classVec"])
+        	stages += [stringIndexer, encoder]
+		
+	label_stringIdx = StringIndexer(inputCol = 'isFraud', outputCol = 'label')
+	stages += [label_stringIdx]
+	
+	assemblerInputs = [c + "classVec" for c in categoricalColumns] + nonCategoricalColumns
+	assembler = VectorAssembler(inputCols=assemblerInputs, outputCol="vectorized_features")
+        stages += [assembler]
+        scaler = StandardScaler(inputCol="vectorized_features", outputCol="features")
+        stages += [scaler]
+
 ### Model Pipeline
 We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
 
-The following code is taken from databricks’ official site. First of all we determine categorical columns. Then, it indexes each categorical column using the StringIndexer. After that, it converts the indexed categories into one-hot encoded variables. The resulting output has the binary vectors appended to the end of each row. We use the StringIndexer again to encode our labels to label indices. Next, we use the VectorAssembler to combine all the feature columns into a single vector column. As a final step, we use StandardScaler to distribute our features normally.
+First of all we determine categorical columns. Then, it indexes each categorical column using the StringIndexer. After that, it converts the indexed categories into one-hot encoded variables. The resulting output has the binary vectors appended to the end of each row. We use the StringIndexer again to encode our labels to label indices. Next, we use the VectorAssembler to combine all the feature columns into a single vector column. As a final step, we use StandardScaler to distribute our features normally.
+
+	pipeline = Pipeline(stages = stages)
+	pipelineModel = pipeline.fit(train_transaction)
+	df = pipelineModel.transform(train_transaction)
+	selectedCols = ['label', 'features'] + cols
+	df = df.select(selectedCols)    
 
 Run the stages as a Pipeline. This puts the data through all of the feature transformations we described in a single call.
