@@ -32,14 +32,14 @@ You can read more about the data from [this post by the competition host](https:
 
 The realization of this project can be divided into the following phases:
 
-- Terraform Installation
-- AWS Prerequisites
-- Terraform EMR Module	
-	- Module Description
-	- Module Configuration
-	- Module Execution
-- Fraud Detection Model Description
-- Results and Conclusions
+- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
+- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
+- [Terraform EMR Module	](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
+	- [Module Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-description)
+	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
+	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
+- [Fraud Detection Model Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
+- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
 
 Let's dive into them.
 
