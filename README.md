@@ -279,7 +279,7 @@ From there, we create a module block in order to call the emr module we describe
     	"spark.yarn.submit.waitAppCompletion=true",
     	"--executor-memory",
     	"2g",
-    	"s3://your-bucket-name/code/fraud_detection_complete.py"
+    	"s3://your-bucket-name/code/fraud_detection_model.py"
       ]
     }
 
@@ -540,9 +540,9 @@ Then we built two functions, the first one has the task of train the model using
 		print('This is a', str((float(numSuccesses) / float(numInspections)) * 100) + '%', 'success rate')
 		
 		true_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='yes')).count()
-		false_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
-		true_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='no')).count()
-		false_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
+		false_positive = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
+		true_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='no')).count()		
+		false_negative = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
 		
 		print("True positive: " + str(true_positive)) 
 		print("False positive: " + str(false_positive)) 
@@ -578,20 +578,22 @@ In the following we show the classifiers initialization and the call to the `cla
 ### Model Evaluation
 
 In order to perform the model evaluation the `classifier_executor` function calls the `metrics_calc`. Here we use the BinaryClassificationEvaluator to evaluate our models. 
-Note that the default metric for the BinaryClassificationEvaluator is areaUnderROC. ROC is a probability curve and AUC represents degree or measure of separability. ROC tells how much model is capable of distinguishing between classes. Higher the AUC, better the model is at distinguishing between patients with diabetes and no diabetes.
+Note that the default metric for the BinaryClassificationEvaluator is areaUnderROC. ROC is a probability curve and AUC represents degree or measure of separability. ROC tells how much model is capable of distinguishing between classes. Higher the AUC, better the model is at distinguishing between fraudolent or no fraudolent transactions.
 
 #### Classification Evaluation Metrics
 
 In this last function we also perform the calculation of some metrics. When making predictions on events we can get four type of results:
-1. True Positives: TP
-2. True Negatives: TN
-3. False Positives: FP
-4. False Negatives: FN
+1. TP - True Positives: is the number of transactions correctly classified as fraudulent
+2. FP - False Positives: is the number of fraudulent transactions erroneously classified as legitimate
+3. TN - True Negatives: is the number of transactions correctly classified as legitimate
+4. FN - False Negatives: is the number of legitimate transactions erroneously classified as fraudulent
 
 Combining these results we compute the following metrics:
-- Sensitivity
-- Fallout
-- Specificity
-- Missreate
+- Sensitivity: TP/(TP+FN)
+- Fallout: FP/(FP+TN)
+- Specificity: TN/(TN+FP)
+- Missreate: FN/(FN+TP)
+
+The first two metrics have been chosen because they provide information about the performance in terms of fraudulent transactions correctly classified, while the other two have been chosen in order to evaluate the algorithm performance in terms of correct and incorrect classification of the legitimate transactions.
 
 ## Results and Conclusions
