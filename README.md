@@ -75,10 +75,10 @@ The configuration process creates a file at **~/.aws/credentials** on MacOS and 
 ## Setting Up the Bucket
 
 1. Clone this repo on your local machine.
-2. Open the **/MLModel/fraud_detection_model.py** file with a text editor and insert the name of the bucket you created previously in the following variable:
+2. Open the **/ModelCode/fraud_detection_model.py** file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
-3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the **/MLModel/fraud_detection_model.py** file you have just modified.
+3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the **/ModelCode/fraud_detection_model.py** file you have just modified.
 4. Go to the **input/** directory of your bucket and upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files.
 
 ## Terraform EMR Module
