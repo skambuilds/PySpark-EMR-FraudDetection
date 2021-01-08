@@ -597,3 +597,40 @@ Combining these results we compute the following metrics:
 The first two metrics have been chosen because they provide information about the performance in terms of fraudulent transactions correctly classified, while the other two have been chosen in order to evaluate the algorithm performance in terms of correct and incorrect classification of the legitimate transactions.
 
 ## Results and Conclusions
+
+The dataset has been split as follows:
+- Training Dataset Count: 413264
+- Test Dataset Count: 177276
+
+Below we show the results of the chosen classifiers:
+- Logistic Regression results:
+
+		Test Area Under ROC: 0.8313290563191048
+		There were 177276 inspections and there were 172035 successful predictions
+		This is a 97.04359304135923% success rate
+
+		True positive: 1347
+		False positive: 4946
+		True negative: 170688
+		False negative: 295
+
+		Sensitivity: 0.820341047503045
+		Fallout: 0.028160834462575585
+		Specificity: 0.9718391655374244
+		Miss_rate: 0.17965895249695493
+
+- Decision Trees results:
+
+		Test Area Under ROC: 0.3854696827689975
+		There were 177272 inspections and there were 171842 successful predictions
+		This is a 96.9369105104021% success rate
+
+		True positive: 1222
+		False positive: 5071
+		True negative: 170620
+		False negative: 363
+
+		Sensitivity: 0.7709779179810725
+		Fallout: 0.028863174550773803
+		Specificity: 0.9711368254492262
+		Miss_rate: 0.22902208201892746
