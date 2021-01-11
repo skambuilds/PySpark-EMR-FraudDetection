@@ -12,7 +12,7 @@ from pyspark.sql.functions import udf
 from pyspark.ml.classification import LogisticRegression, DecisionTreeClassifier, RandomForestClassifier, GBTClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.sql import SparkSession
-#import pandas as pd
+
 
 
 if __name__ == "__main__":
@@ -20,8 +20,8 @@ if __name__ == "__main__":
         .builder\
         .appName("ml-transactions")\
         .getOrCreate()
-    # PARAMETERS
-    
+
+    # PARAMETERS    
     enableFeatSelection = True
     awsSourceLocation = True
     enableNormalization = False
@@ -29,15 +29,13 @@ if __name__ == "__main__":
     enableTargetStringConv = True
     enableStandardization = True
     
-    # CLASSIFIER SELECTION
-    
+    # CLASSIFIERS SELECTION    
     logReg = True
     decTree = True
     ranFor = False
     grBoot = False
     
-    # FILE LOCATIONS
-    
+    # FILE LOCATIONS    
     if awsSourceLocation:
         bucket_name = 's3://your-bucket-name'
         train_ts_location = bucket_name + '/input/train_transaction.csv'
@@ -49,6 +47,7 @@ if __name__ == "__main__":
         train_id_location = "/FileStore/tables/train_identity.csv"
         test_ts_location = "/FileStore/tables/test_transaction.csv"
         test_id_location = "/FileStore/tables/test_identity.csv"
+
 
     #### FEATURE SELECTION ####
     
@@ -112,7 +111,10 @@ if __name__ == "__main__":
     test_df = test_ts.join(test_id, "TransactionID", how='left')
     print("Test dataset loading complete")
     
+    if enableCompleteDF:
+        train_ts.unpersist()
     train_id.unpersist()
+    test_ts.unpersist()
     test_id.unpersist()
     
     # PRINT STATUS
@@ -125,24 +127,19 @@ if __name__ == "__main__":
     print("Starting Feature engineering...")
 
     #### FEATURE ENGINEERING ####
-
-    #TODO
-    #Normalizzazione delle colonne D
-    #Combinazione di alcune colonne
-    #Tutta la logica seguente va ripetuta per il dataset di test in modo poi da poter fare le predizioni
-    
+   
     spark.conf.set("spark.sql.broadcastTimeout",  36000)
     
     
     # COLUMNS DEFINITION
-    targetColumn = ["isFraud"]; #La colonna target viene esclusa dai due insiemi: categoricalColumns e nonCategoricalColumns
+    targetColumn = ["isFraud"];
     
     card_Columns  = [f'card{i}' for i in range(1, 7)];
     booleanColumns = ['M1','M2','M3','M5','M6','M7','M8','M9'];
-    categoricalColumns = ["ProductCD", "P_emaildomain", "R_emaildomain", "addr1","addr2",'M4']+card_Columns+booleanColumns; #Le colonne booleane vengono inserite tra quelle categoriche
+    categoricalColumns = ["ProductCD", "P_emaildomain", "R_emaildomain", "addr1","addr2",'M4']+card_Columns+booleanColumns;
     
     intColumns = ["TransactionID", "TransactionDT"]; 
-    #Attenzione TransactionID deve essere rimosso prima dell'esecuzione dei modelli
+    
     
     doubleColumns = ["TransactionAmt", "dist1", "dist2"]
     doubleColumns_D = [f'D{i}' for i in range(1, 16)];
@@ -209,9 +206,6 @@ if __name__ == "__main__":
     for _col in nonCategoricalColumns:
         train_transaction = train_transaction.withColumn(_col, when(train_transaction[_col].isNull(), 0).otherwise(train_transaction[_col]))
     
-    #ATTENZIONE! VALUTARE SE FARE L'AGGREGAZIONE  ####
-    
-      
     # DOUBLE COLUMNS NORMALIZATION VIA ASSAMBLER
     if enableNormalization:
         assembler = VectorAssembler(inputCols=allDoubleColumns,outputCol="features")
@@ -245,8 +239,7 @@ if __name__ == "__main__":
             #train_transaction = train_transaction.withColumn(_col, when(train_transaction[_col] == 'T', 1).otherwise(0))
       
     cols = train_transaction.columns
-
-    #Valutare l'utilità di convertire i valori della colonna target in Yes e No
+    
     if enableTargetStringConv:
         trgStrConv_udf = udf(lambda val: "no" if val==0 else "yes", StringType())
         train_transaction=train_transaction.withColumn("isFraud", trgStrConv_udf('isFraud'))
@@ -286,13 +279,10 @@ if __name__ == "__main__":
     df.printSchema()
     
     print("Hot encoding complete!")
-
-    #Rimuovere isFraud da df
+    train_transaction.unpersist()
     
     #***************************************************#
     
-    
-    #Model training and execution
     
     #### DATASET SPLITTING ####
     
@@ -300,6 +290,7 @@ if __name__ == "__main__":
     print("Training Dataset Count: " + str(train.count()))
     print("Test Dataset Count: " + str(test.count()))
     
+    #### MODEL TRAINING AND EXECUTION ####
     
     def classifier_executor(classifier, train, test):
         model = classifier.fit(train)
@@ -309,8 +300,7 @@ if __name__ == "__main__":
     
     def metrics_calc(predictions):
         evaluator = BinaryClassificationEvaluator()
-        print("Test Area Under ROC: " + str(evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})))
-        #print('Test Area Under ROC', evaluator.evaluate(predictions))
+        print("Test Area Under ROC: " + str(evaluator.evaluate(predictions, {evaluator.metricName: "areaUnderROC"})))        
     
         numSuccesses = predictions.where("""(prediction = 0 AND isFraud = 'no') OR (prediction = 1 AND (isFraud = 'yes'))""").count()
         numInspections = predictions.count()
