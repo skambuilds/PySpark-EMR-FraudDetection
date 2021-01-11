@@ -75,20 +75,20 @@ The configuration process creates a file at **~/.aws/credentials** on MacOS and 
 ## Setting Up the Bucket
 
 1. Clone this repo on your local machine.
-2. Open the [**/ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
+2. Open the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
-3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the **/ModelCode/fraud_detection_model.py** file you have just modified.
+3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
 4. Go to the **input/** directory of your bucket and upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files.
 
 ## Terraform EMR Module
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
 
-We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the **Terraform/** directory of this repo. This directory has been organized as follows:
+We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the [**Terraform/**](Terraform/) directory of this repo. This directory has been organized as follows:
 
-- **Terraform/test.tf** - Terraform configuration file
-- **Terraform/emr-module/** - Contains the Terraform module code to create an AWS EMR cluster. The contents of this directory will be specified in the next section.
-- **Terraform/configurations/** - Contains a specific configuration file for the EMR cluster.
+- [**Terraform/test.tf**](Terraform/test.tf) - Terraform configuration file
+- [**Terraform/emr-module/**](Terraform/emr-module/) - Contains the Terraform module code to create an AWS EMR cluster. The contents of this directory will be specified in the next section.
+- [**Terraform/configurations/**](Terraform/configurations/) - Contains a specific configuration file for the EMR cluster.
 
 In the list below we specify the data source and resource configurations we have used:
 
@@ -107,10 +107,10 @@ In the list below we specify the data source and resource configurations we have
 On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows. In the following we describe the module structure and then we provide a guide to execute it.
 
 #### Inputs
-Inputs are variables we provide to a module in order for it to perform its task. The **Terraform/emr-module/variables.tf** contains the variables declaration.
+Inputs are variables we provide to a module in order for it to perform its task. The [**Terraform/emr-module/variables.tf**](Terraform/emr-module/variables.tf) contains the variables declaration.
 
 #### Configuration
-As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The **Terraform/emr-module/main.tf** file contains this code.
+As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The [**Terraform/emr-module/main.tf**](Terraform/emr-module/main.tf) file contains this code.
 
 ##### Identity and Access Management (IAM)
 An [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) is a declarative way to assemble IAM policy objects in Terraform. Here, it is being used to create a trust relationship for an IAM role such that the EC2 service can assume the associated role and make AWS API calls on our behalf.
@@ -222,10 +222,10 @@ Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/prov
 The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster.
 
 #### Outputs
-As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The **Terraform/emr-module/outputs.tf** file contains this setting.
+As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The [**Terraform/emr-module/outputs.tf**](Terraform/emr-module/outputs.tf) file contains this setting.
 
 ### Module Configuration
-In this section we clarify how to configure the module. The **Terraform/test.tf** file contains the Terraform configuration. We describe its content in the following.
+In this section we clarify how to configure the module. The [**Terraform/test.tf**](Terraform/test.tf) file contains the Terraform configuration. We describe its content in the following.
 
 First of all we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need to set in the provider block is a version and a region as shown below. Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
 
@@ -234,7 +234,7 @@ First of all we want to make sure that our AWS provider is properly configured. 
         region  = "us-east-1"
     }
 
-From there, we create a module block in order to call the emr module we described previously. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the **Terraform/emr-module/** directory of this repo.
+From there, we create a module block in order to call the emr module we described previously. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo.
 
     module "emr" {
       source = ".emr-module/"
@@ -308,7 +308,7 @@ For the following ones we have already set up the right values for you:
 - `step_name` - The name of the step
 - `step_jar_path` - Path to a JAR file run during the step
 
-Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable. You can add your configuration rules simply updating the **Terraform/configurations/default.json** file.
+Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable. You can add your configuration rules simply updating the [**Terraform/configurations/default.json**](Terraform/configurations/default.json) file.
 
     provider "template" {
         version = "2.2.0"
