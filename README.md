@@ -75,7 +75,7 @@ The configuration process creates a file at **~/.aws/credentials** on MacOS and 
 ## Setting Up the Bucket
 
 1. Clone this repo on your local machine.
-2. Open the **/ModelCode/fraud_detection_model.py** file with a text editor and insert the name of the bucket you created previously in the following variable:
+2. Open the [**/ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
 3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the **/ModelCode/fraud_detection_model.py** file you have just modified.
