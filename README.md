@@ -40,6 +40,7 @@ The realization of this project can be divided into the following phases:
 	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
 - [Fraud Detection Model Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
 - [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
+- [References]
 
 Let's dive into them.
 
@@ -634,3 +635,11 @@ Below we show the results of the chosen classifiers:
 		Fallout: 0.028863174550773803
 		Specificity: 0.9711368254492262
 		Miss_rate: 0.22902208201892746
+		
+## References
+
+- [Brent Lemieux - Getting Started with PySpark on AWS EMR](https://towardsdatascience.com/getting-started-with-pyspark-on-amazon-emr-c85154b6b921)
+- [Azavea - A Terraform Module for Amazon Elastic MapReduce](https://www.azavea.com/blog/2017/12/06/a-terraform-module-for-amazon-emr/)
+- [Gülcan Öğündür - Logistic Regression with PySpark](https://medium.com/swlh/logistic-regression-with-pyspark-60295d41221)
+- [Dhiraj Rai - Logistic Regression in Spark ML](https://medium.com/@dhiraj.p.rai/logistic-regression-in-spark-ml-8a95b5f5434c)
+- [D. Reforgiato Recupero, S. Carta, G. Fenu, R. Saia - Fraud detection for E-commerce transactions by employing a prudential Multiple Consensus model](https://www.sciencedirect.com/science/article/abs/pii/S2214212618304216)
