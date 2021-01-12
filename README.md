@@ -318,35 +318,6 @@ Besides the EMR module, we also make use of a [template_file](https://registry.t
     data "template_file" "emr_configurations" {
         template = file("configurations/default.json")
     }
-    
-Finally, we want to add a few rules to the cluster security groups. For the head node security group, we want to open port 22 for SSH, and for both security groups we want to allow all egress traffic. As you can see, we’re able to do this via the available module.emr.master_security_group_id and module.emr.slave_security_group_id outputs.
-
-    resource "aws_security_group_rule" "emr_master_ssh_ingress" {
-      type              = "ingress"
-      from_port         = "22"
-      to_port           = "22"
-      protocol          = "tcp"
-      cidr_blocks       = ["1.2.3.4/32"]
-      security_group_id = module.emr.master_security_group_id
-    }
-
-    resource "aws_security_group_rule" "emr_master_all_egress" {
-      type              = "egress"
-      from_port         = "0"
-      to_port           = "0"
-      protocol          = "-1"
-      cidr_blocks       = ["0.0.0.0/0"]
-      security_group_id = module.emr.master_security_group_id
-    }
-
-    resource "aws_security_group_rule" "emr_slave_all_egress" {
-      type              = "egress"
-      from_port         = "0"
-      to_port           = "0"
-      protocol          = "-1"
-      cidr_blocks       = ["0.0.0.0/0"]
-      security_group_id = module.emr.slave_security_group_id
-    }
 
 ### Module Execution
 Now you can use Terraform to create and destroy the cluster. First of all you have to navigate into the **Terraform/** directory of your local copy of this repo. Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file.
@@ -635,7 +606,31 @@ Below we show the results of the chosen classifiers:
 		Fallout: 0.028863174550773803
 		Specificity: 0.9711368254492262
 		Miss_rate: 0.22902208201892746
-		
+
+Taking a look at the results it is clear that the Logistic Regression classifier gives the best performance. But we can also notice that there are a lot of fraudulent transactions erroneously classified as legitimate.
+This result is due to the intrinsic nature of the problem we are facing. In the context of fraud detection, indeed, the datasets are characterized by a highly unbalanced distribution of classes which therefore determines poor performance of the classifiers.
+In order to contain this effect and consequently improving the performance of the Logistic Regression classifier we have adopted the following strategies:
+1. Class Weighing technique in order to assign higher weightage to the minority class
+2. Naif Oversampling technique where the artificial instances have been constructed by a random extraction of the column values.
+
+We report below the results of the Logistic Regression combined with the described strategies:
+
+- Class Weighing:
+
+		Test Area Under ROC: 0.8791011414158072
+		There were 177276 inspections and there were 144674 successful predictions
+		This is a 81.60946772264717% success rate
+
+		True positive: 5026
+		False positive: 1267
+		True negative: 139648
+		False negative: 31335
+
+		Sensitivity: 0.13822502131404527
+		Fallout: 0.00899123585139978
+		Specificity: 0.9910087641486002
+		Miss_rate: 0.8617749786859548
+
 ## References
 
 - [Brent Lemieux - Getting Started with PySpark on AWS EMR](https://towardsdatascience.com/getting-started-with-pyspark-on-amazon-emr-c85154b6b921)
