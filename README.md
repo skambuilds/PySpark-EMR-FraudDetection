@@ -578,20 +578,20 @@ The dataset has been split as follows:
 
 Below we show the results of the chosen classifiers:
 - Logistic Regression results:
-
-		Test Area Under ROC: 0.8313290563191051
+		
+		Test Area Under ROC: 0.8313290563191054
 		There were 177276 inspections and there were 172035 successful predictions
 		This is a 97.04359304135923% success rate
 		
 		True positive: 1347
-		False positive: 4946
+		False positive: 295
 		True negative: 170688
-		False negative: 321
+		False negative: 4902
 		
-		Sensitivity: 0.8075539568345323
-		Fallout: 0.028160834462575585
-		Specificity: 0.9718391655374244
-		Miss_rate: 0.19244604316546762
+		Sensitivity: 0.2155544887181949
+		Fallout: 0.0017253177216448418
+		Specificity: 0.9982746822783551
+		Miss_rate: 0.7844455112818051
 
 - Decision Trees results:
 
