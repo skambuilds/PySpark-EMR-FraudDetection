@@ -36,7 +36,7 @@ if __name__ == "__main__":
     
     # FILE LOCATIONS    
     if awsSourceLocation:
-        bucket_name = 's3://spark-fraud-resources'
+        bucket_name = 's3://your-bucket-name'
         train_ts_location = bucket_name + '/input/train_transaction.csv'
         train_id_location = bucket_name + '/input/train_identity.csv'	
         test_ts_location = bucket_name + '/input/test_transaction.csv'
