@@ -564,9 +564,9 @@ In this last function we also perform the calculation of some metrics. When maki
 
 Combining these results we compute the following metrics:
 - Sensitivity: TP/(TP+FN)
-- Fallout: FP/(FP+TN)
+- Fall-out: FP/(FP+TN)
 - Specificity: TN/(TN+FP)
-- Missreate: FN/(FN+TP)
+- Miss-rate: FN/(FN+TP)
 
 The first two metrics have been chosen because they provide information about the performance in terms of fraudulent transactions correctly classified, while the other two have been chosen in order to evaluate the algorithm performance in terms of correct and incorrect classification of the legitimate transactions.
 
