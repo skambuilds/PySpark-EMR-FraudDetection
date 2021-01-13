@@ -595,19 +595,19 @@ Below we show the results of the chosen classifiers:
 
 - Decision Trees results:
 
-		Test Area Under ROC: 0.3854696827689975
-		There were 177272 inspections and there were 171842 successful predictions
-		This is a 96.9369105104021% success rate
-
+		Test Area Under ROC: 0.38546968276899746
+		There were 177276 inspections and there were 171842 successful predictions
+		This is a 96.93472325639117% success rate
+		
 		True positive: 1222
-		False positive: 5071
+		False positive: 363
 		True negative: 170620
-		False negative: 363
-
-		Sensitivity: 0.7709779179810725
-		Fallout: 0.028863174550773803
-		Specificity: 0.9711368254492262
-		Miss_rate: 0.22902208201892746
+		False negative: 5071
+		
+		Sensitivity: 0.1941840139837915
+		Fallout: 0.002123018077820602
+		Specificity: 0.9978769819221794
+		Miss_rate: 0.8058159860162085
 
 Taking a look at the results we can see that the Logistic Regression classifier gives the best performance, but we can also notice that there are a lot of fraudulent transactions erroneously classified as legitimate. This result is due to the intrinsic nature of the problem we are facing. In the context of fraud detection, indeed, the datasets are characterized by a highly unbalanced distribution of classes which therefore determines poor performance of the classifiers.
 In order to contain this effect and consequently improving the performance of the Logistic Regression classifier we may need to adopt the following strategies:
