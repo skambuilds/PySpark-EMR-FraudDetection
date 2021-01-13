@@ -621,7 +621,7 @@ This two options could represent the future improvements of our work.
 - [Brent Lemieux - Getting Started with PySpark on AWS EMR](https://towardsdatascience.com/getting-started-with-pyspark-on-amazon-emr-c85154b6b921)
 - [Hector Castro - Azavea - A Terraform Module for Amazon Elastic MapReduce](https://www.azavea.com/blog/2017/12/06/a-terraform-module-for-amazon-emr/)
 - [Chris Deotte - EDA for Columns V and ID](https://www.kaggle.com/cdeotte/eda-for-columns-v-and-id)
-- [Victor Roman- Finding Donors: Classification Project With PySpark](https://towardsdatascience.com/finding-donors-classification-project-with-pyspark-485fb3c94e5e)
+- [Victor Roman - Finding Donors: Classification Project With PySpark](https://towardsdatascience.com/finding-donors-classification-project-with-pyspark-485fb3c94e5e)
 - [Gülcan Öğündür - Logistic Regression with PySpark](https://medium.com/swlh/logistic-regression-with-pyspark-60295d41221)
 - [Dhiraj Rai - Logistic Regression in Spark ML](https://medium.com/@dhiraj.p.rai/logistic-regression-in-spark-ml-8a95b5f5434c)
 - [D. Reforgiato Recupero, S. Carta, G. Fenu, R. Saia - Fraud detection for E-commerce transactions by employing a prudential Multiple Consensus model](https://www.sciencedirect.com/science/article/abs/pii/S2214212618304216)
