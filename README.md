@@ -614,7 +614,7 @@ In order to contain this effect and consequently improving the performance of th
 1. Class weighing technique in order to assign higher weightage to the minority class
 2. Analyze and tune the hyperparameters
 
-This two options could be represent the future improvements of our work.
+This two options could represent the future improvements of our work.
 
 ## References
 
