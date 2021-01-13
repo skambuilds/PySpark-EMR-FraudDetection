@@ -28,16 +28,15 @@ if __name__ == "__main__":
     enableCompleteDF = True
     enableTargetStringConv = True
     enableStandardization = True
+    enableClassWeights = False
     
     # CLASSIFIERS SELECTION    
     logReg = True
-    decTree = True
-    ranFor = False
-    grBoot = False
+    decTree = True    
     
     # FILE LOCATIONS    
     if awsSourceLocation:
-        bucket_name = 's3://your-bucket-name'
+        bucket_name = 's3://spark-fraud-resources'
         train_ts_location = bucket_name + '/input/train_transaction.csv'
         train_id_location = bucket_name + '/input/train_identity.csv'	
         test_ts_location = bucket_name + '/input/test_transaction.csv'
@@ -290,6 +289,20 @@ if __name__ == "__main__":
     print("Training Dataset Count: " + str(train.count()))
     print("Test Dataset Count: " + str(test.count()))
     
+    if enableClassWeights:
+        dataset_size = float(train.select("isFraud").count())
+        numPositives = train.select("isFraud").where("isFraud == 'yes'").count()
+        per_ones = (float(numPositives)/float(dataset_size))*100
+        numNegatives = float(dataset_size-numPositives)
+        BalancingRatio = numNegatives/dataset_size
+        print('The number of ones are: {}'.format(numPositives))
+        print('Percentage of ones are: {}'.format(per_ones))
+        print('BalancingRatio: {}'.format(BalancingRatio))
+
+        train = train.withColumn("classWeights", when(train.isFraud == 'yes',BalancingRatio).otherwise(1-BalancingRatio))
+        train.select("classWeights").where("isFraud == 'yes'").show(5)
+        train.select("classWeights").where("isFraud == 'no'").show(5)
+
     #### MODEL TRAINING AND EXECUTION ####
     
     def classifier_executor(classifier, train, test):
@@ -332,6 +345,9 @@ if __name__ == "__main__":
     if logReg:
         classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
         classifier_executor(classifier, train, test)
+        if enableClassWeights:
+            classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', weightCol = 'classWeights', maxIter=10)
+            classifier_executor(classifier, train, test)
 
     # DT
     if decTree:
