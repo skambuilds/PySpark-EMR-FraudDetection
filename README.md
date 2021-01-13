@@ -351,7 +351,7 @@ If your configuration is valid, Terraform will return a success message.
 
 #### Create Infrastructure
 
-First, we assemble a plan with the available configuration. This gives Terraform an opportunity to inspect the state of the world and determine exactly what it needs to do to make the world match our desired configuration.
+First, we assemble a plan with the available configuration. This gives Terraform an opportunity to inspect the state of your AWS account and determine exactly what it needs to do to make it match our desired configuration.
 
 	$ terraform plan -out=test.tfplan
 	
@@ -557,10 +557,10 @@ Note that the default metric for the BinaryClassificationEvaluator is areaUnderR
 #### Classification Evaluation Metrics
 
 In this last function we also perform the calculation of some metrics. When making predictions on events we can get four type of results:
-1. TP - True Positives: is the number of transactions correctly classified as fraudulent
-2. FP - False Positives: is the number of fraudulent transactions erroneously classified as legitimate
-3. TN - True Negatives: is the number of transactions correctly classified as legitimate
-4. FN - False Negatives: is the number of legitimate transactions erroneously classified as fraudulent
+1. TP - True Positives: transactions correctly classified as fraudulent
+2. FP - False Positives: fraudulent transactions erroneously classified as legitimate
+3. TN - True Negatives: transactions correctly classified as legitimate
+4. FN - False Negatives: legitimate transactions erroneously classified as fraudulent
 
 Combining these results we compute the following metrics:
 - Sensitivity: TP/(TP+FN)
