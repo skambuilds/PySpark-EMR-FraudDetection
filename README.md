@@ -2,7 +2,7 @@
 A PySpark fraud detection project on AWS EMR with Terraform
 
 ## Introduction
-In this project, we build a machine learning model to accurately predict whether the transactions in the dateset are fraudolent or not. We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
+In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
 
 Terraform is the infrastructure as code tool from HashiCorp. It is a tool for building, changing, and managing infrastructure in a safe, repeatable way. Operators and Infrastructure teams can use Terraform to manage environments with a configuration language called the HashiCorp Configuration Language (HCL) for human-readable, automated deployments.
 
@@ -577,19 +577,19 @@ The dataset has been split as follows:
 Below we show the results of the chosen classifiers:
 - Logistic Regression results:
 
-		Test Area Under ROC: 0.8313290563191048
+		Test Area Under ROC: 0.8313290563191051
 		There were 177276 inspections and there were 172035 successful predictions
 		This is a 97.04359304135923% success rate
-
+		
 		True positive: 1347
 		False positive: 4946
 		True negative: 170688
-		False negative: 295
-
-		Sensitivity: 0.820341047503045
+		False negative: 321
+		
+		Sensitivity: 0.8075539568345323
 		Fallout: 0.028160834462575585
 		Specificity: 0.9718391655374244
-		Miss_rate: 0.17965895249695493
+		Miss_rate: 0.19244604316546762
 
 - Decision Trees results:
 
@@ -607,11 +607,10 @@ Below we show the results of the chosen classifiers:
 		Specificity: 0.9711368254492262
 		Miss_rate: 0.22902208201892746
 
-Taking a look at the results it is clear that the Logistic Regression classifier gives the best performance. But we can also notice that there are a lot of fraudulent transactions erroneously classified as legitimate.
-This result is due to the intrinsic nature of the problem we are facing. In the context of fraud detection, indeed, the datasets are characterized by a highly unbalanced distribution of classes which therefore determines poor performance of the classifiers.
+Taking a look at the results we can see that the Logistic Regression classifier gives the best performance, but we can also notice that there are a lot of fraudulent transactions erroneously classified as legitimate. This result is due to the intrinsic nature of the problem we are facing. In the context of fraud detection, indeed, the datasets are characterized by a highly unbalanced distribution of classes which therefore determines poor performance of the classifiers.
 In order to contain this effect and consequently improving the performance of the Logistic Regression classifier we have adopted the following strategies:
-1. Class Weighing technique in order to assign higher weightage to the minority class
-2. Naif Oversampling technique where the artificial instances have been constructed by a random extraction of the column values.
+1. Class weighing technique in order to assign higher weightage to the minority class
+2. Naif oversampling technique where the artificial instances have been constructed by a random extraction of the column values.
 
 We report below the results of the Logistic Regression combined with the described strategies:
 
