@@ -4,7 +4,7 @@ provider "aws" {
 }
 
 module "emr" {
-  source = ".emr-module/"
+  source = "./emr-module/"
 
   name          = "cluster-name"
   vpc_id        = "vpc-id"
