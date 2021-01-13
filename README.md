@@ -240,7 +240,7 @@ First of all we want to make sure that our AWS provider is properly configured. 
 From there, we create a module block in order to call the emr module we described previously. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo.
 
     module "emr" {
-      source = ".emr-module/"
+      source = "./emr-module/"
 
       name          = "cluster-name"
       vpc_id        = "vpc-id"
@@ -394,7 +394,7 @@ In this phase we simply load the data csv files from the S3 bucket and we join t
 	test_df = test_ts.join(test_id, "TransactionID", how='left')
 
 ### Feature Selection
-Exploring the dataset we noticed that there were so many NAN values, consequently we take inspiration from this [Exploratory Data Analysis](https://www.kaggle.com/cdeotte/eda-for-columns-v-and-id) to perform the feature selection. The authors analyzed all the columns of train_transaction.csv to determine which columns are related by the number of NANs present. They see that D1 relates to a subset of V281 thru V315, and D11 relates to V1 thru V11. Also we find groups of Vs with similar NAN structure. And they see that M1, M2, M3 related and M8, M9 related.
+Exploring the dataset we noticed that there were so many NAN values, consequently we take inspiration from this [Exploratory Data Analysis](https://www.kaggle.com/cdeotte/eda-for-columns-v-and-id) to perform the feature selection. The authors analyzed all the columns of train_transaction.csv to determine which columns are related by the number of NANs present. They see that D1 relates to a subset of V281 thru V315, and D11 relates to V1 thru V11. They also find groups of Vs with similar NAN structure. And they see that M1, M2, M3 related and M8, M9 related.
 
 The V columns appear to be redundant and correlated. Therefore for each block of V columns with similar NAN structure, we could find subsets within the block that are correlated. Then we can replace the entire block with one column from each subset.
 
@@ -514,9 +514,9 @@ Then we built two functions, the first one has the task of train the model using
 		print('This is a', str((float(numSuccesses) / float(numInspections)) * 100) + '%', 'success rate')
 		
 		true_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='yes')).count()
-		false_positive = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
+		false_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
 		true_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='no')).count()		
-		false_negative = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
+		false_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
 		
 		print("True positive: " + str(true_positive)) 
 		print("False positive: " + str(false_positive)) 
@@ -558,9 +558,9 @@ Note that the default metric for the BinaryClassificationEvaluator is areaUnderR
 
 In this last function we also perform the calculation of some metrics. When making predictions on events we can get four type of results:
 1. TP - True Positives: transactions correctly classified as fraudulent
-2. FP - False Positives: fraudulent transactions erroneously classified as legitimate
+2. FP - False Positives: legitimate transactions erroneously classified as fraudulent
 3. TN - True Negatives: transactions correctly classified as legitimate
-4. FN - False Negatives: legitimate transactions erroneously classified as fraudulent
+4. FN - False Negatives: fraudulent transactions erroneously classified as legitimate
 
 Combining these results we compute the following metrics:
 - Sensitivity: TP/(TP+FN)
