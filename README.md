@@ -551,7 +551,7 @@ In the following we show the classifiers initialization and the call to the `cla
 		
 ### Model Evaluation
 
-In order to perform the model evaluation the `classifier_executor` function calls the `metrics_calc`. Here we use the BinaryClassificationEvaluator to evaluate our models. 
+In order to perform the model evaluation the `classifier_executor` function calls the `metrics_calc` function. Here we use the BinaryClassificationEvaluator to evaluate our models. 
 Note that the default metric for the BinaryClassificationEvaluator is areaUnderROC. ROC is a probability curve and AUC represents degree or measure of separability. ROC tells how much model is capable of distinguishing between classes. Higher the AUC, better the model is at distinguishing between fraudolent or no fraudolent transactions.
 
 #### Classification Evaluation Metrics
@@ -610,27 +610,11 @@ Below we show the results of the chosen classifiers:
 		Miss_rate: 0.22902208201892746
 
 Taking a look at the results we can see that the Logistic Regression classifier gives the best performance, but we can also notice that there are a lot of fraudulent transactions erroneously classified as legitimate. This result is due to the intrinsic nature of the problem we are facing. In the context of fraud detection, indeed, the datasets are characterized by a highly unbalanced distribution of classes which therefore determines poor performance of the classifiers.
-In order to contain this effect and consequently improving the performance of the Logistic Regression classifier we have adopted the following strategies:
+In order to contain this effect and consequently improving the performance of the Logistic Regression classifier we may need to adopt the following strategies:
 1. Class weighing technique in order to assign higher weightage to the minority class
-2. Naif oversampling technique where the artificial instances have been constructed by a random extraction of the column values.
+2. Analyze and tune the hyperparameters
 
-We report below the results of the Logistic Regression combined with the described strategies:
-
-- Class Weighing:
-
-		Test Area Under ROC: 0.8791011414158072
-		There were 177276 inspections and there were 144674 successful predictions
-		This is a 81.60946772264717% success rate
-
-		True positive: 5026
-		False positive: 1267
-		True negative: 139648
-		False negative: 31335
-
-		Sensitivity: 0.13822502131404527
-		Fallout: 0.00899123585139978
-		Specificity: 0.9910087641486002
-		Miss_rate: 0.8617749786859548
+This two options could be represent the future improvements of our work.
 
 ## References
 
