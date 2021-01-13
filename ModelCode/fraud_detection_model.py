@@ -322,9 +322,9 @@ if __name__ == "__main__":
         print('This is a', str((float(numSuccesses) / float(numInspections)) * 100) + '%', 'success rate')
     
         true_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='yes')).count()
-        false_positive = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
+        false_positive = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
         true_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='no')).count()        
-        false_negative = predictions.filter((predictions.prediction==1) & (predictions.isFraud=='no')).count()
+        false_negative = predictions.filter((predictions.prediction==0) & (predictions.isFraud=='yes')).count()
     
         print("True positive: " + str(true_positive)) 
         print("False positive: " + str(false_positive)) 
