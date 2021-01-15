@@ -576,6 +576,8 @@ The dataset has been split as follows:
 - Training Dataset Count: 413264
 - Test Dataset Count: 177276
 
+### Qualitative results
+
 Below we show the results of the chosen classifiers:
 - Logistic Regression results:
 		
@@ -616,6 +618,8 @@ In order to contain this effect and consequently improving the performance of th
 
 This two options could represent the future improvements of our work.
 
+### Quantative results
+
 The following table indicates the execution time of our algorthm in three different cluster configurations:
 \- | Configuration 1 | Configuration 2 | Configuration 3
 ------------ | :---: | :---: | :---: 
@@ -623,6 +627,8 @@ The following table indicates the execution time of our algorthm in three differ
 **# Master instances** | 1 | 1 | 1
 **# Core instances** | 2 | 4 | 6
 **Execution Time** | 45 min | 27 min | 23 min
+
+We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
 
 ## References
 
