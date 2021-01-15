@@ -620,7 +620,7 @@ This two options could represent the future improvements of our work.
 
 ### Quantative results
 
-The following table indicates the execution time of our algorthm in three different cluster configurations:
+The following table indicates the execution time of our algorithm in three different cluster configurations:
 \- | Configuration 1 | Configuration 2 | Configuration 3
 ------------ | :---: | :---: | :---: 
 **Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
