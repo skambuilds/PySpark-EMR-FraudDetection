@@ -3,6 +3,23 @@
 # PySpark-EMR-FraudDetection
 A PySpark fraud detection project on AWS EMR with Terraform
 
+## Project Realization
+
+The realization of this project can be divided into the following phases:
+
+- [Introduction](https://github.com/skambuilds/PySpark-EMR-FraudDetection#introduction)
+- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
+- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
+- [Terraform EMR Module	](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
+	- [Module Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-description)
+	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
+	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
+- [Fraud Detection Model Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
+- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
+- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
+
+Let's dive into them.
+
 ## Introduction
 In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
 
@@ -29,22 +46,6 @@ Categorical Features - Identity:
 
 The TransactionDT feature is a timedelta from a given reference datetime (not an actual timestamp).
 You can read more about the data from [this post by the competition host](https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203).
-
-## Project Realization
-
-The realization of this project can be divided into the following phases:
-
-- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
-- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
-- [Terraform EMR Module	](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
-	- [Module Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-description)
-	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
-	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
-- [Fraud Detection Model Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
-- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
-- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
-
-Let's dive into them.
 
 ## Terraform Installation
 
@@ -626,7 +627,12 @@ The following table indicates the execution time of our algorithm in three diffe
 **Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
 **# Master instances** | 1 | 1 | 1
 **# Core instances** | 2 | 4 | 6
-**Execution Time** | 45 min | 27 min | 23 min
+**Pre-processing** | - | - | 7 min
+**Logistic Regression** | - | - | 2 min
+**LR Metrics Calculation**  | - | - | 6 min
+**Decision Tree**  | - | - | 3 min
+**DT Metrics Calculation**  | - | - | 6 min
+**Total Execution Time** | 45 min | 27 min | 23 min
 
 We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
 
