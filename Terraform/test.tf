@@ -43,9 +43,7 @@ module "emr" {
     "--master",
     "yarn",
     "--conf",
-    "spark.yarn.submit.waitAppCompletion=true",
-    "--executor-memory",
-    "2g",
+    "spark.yarn.submit.waitAppCompletion=true",    
     "s3://your-bucket-name/code/fraud_detection_model.py"
   ]
 }
