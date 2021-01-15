@@ -280,9 +280,7 @@ From there, we create a module block in order to call the emr module we describe
     	"--master",
     	"yarn",
     	"--conf",
-    	"spark.yarn.submit.waitAppCompletion=true",
-    	"--executor-memory",
-    	"2g",
+    	"spark.yarn.submit.waitAppCompletion=true",    	
     	"s3://your-bucket-name/code/fraud_detection_model.py"
       ]
     }
@@ -627,12 +625,12 @@ The following table indicates the execution time of our algorithm in three diffe
 **Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
 **# Master instances** | 1 | 1 | 1
 **# Core instances** | 2 | 4 | 6
-**Pre-processing** | - | 8 min | 7 min
-**Logistic Regression** | - | 2 min | 2 min
-**LR Metrics Calculation**  | - | 6 min | 5,5 min
-**Decision Tree**  | - | 5 min | 3 min
-**DT Metrics Calculation**  | - | 6 min | 5,5 min
-**Total Execution Time** | 45 min | 27 min | 23 min
+**Pre-processing** | 11 min | 8 min | 7 min
+**Logistic Regression** | 3 min | 2 min | 2 min
+**LR Metrics Calculation**  | 11 min | 6 min | 5,5 min
+**Decision Tree**  | 8 min | 5 min | 3 min
+**DT Metrics Calculation**  | 11 min | 6 min | 5,5 min
+**Total Execution Time** | 44 min | 27 min | 23 min
 
 We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
 
