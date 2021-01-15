@@ -616,6 +616,14 @@ In order to contain this effect and consequently improving the performance of th
 
 This two options could represent the future improvements of our work.
 
+The following table indicates the execution time of our algorthm in three different cluster configurations:
+\- | Configuration 1 | Configuration 2 | Configuration 3
+------------ | :---: | :---: | :---: 
+**Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
+**# Master instances** | 1 | 1 | 1
+**# Core instances** | 2 | 4 | 6
+**Execution Time** | 45 min | 27 min | 23 min
+
 ## References
 
 - [Brent Lemieux - Getting Started with PySpark on AWS EMR](https://towardsdatascience.com/getting-started-with-pyspark-on-amazon-emr-c85154b6b921)
