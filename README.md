@@ -630,7 +630,7 @@ The following table indicates the execution time of our algorithm in three diffe
 **LR Metrics Calculation**  | 11 min | 6 min | 5,5 min
 **Decision Tree**  | 8 min | 5 min | 3 min
 **DT Metrics Calculation**  | 11 min | 6 min | 5,5 min
-**Total Execution Time** | 44 min | 27 min | 23 min
+**Total Execution Time** | **44 min** | **27 min** | **23 min**
 
 We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
 
