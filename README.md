@@ -8,10 +8,10 @@ A PySpark fraud detection project on AWS EMR with Terraform
 The realization of this project can be divided into the following phases:
 
 - [Introduction](https://github.com/skambuilds/PySpark-EMR-FraudDetection#introduction)
-- [How to replicate this project]
+- [How to replicate this project](https://github.com/skambuilds/PySpark-EMR-FraudDetection/blob/main/README.md#how-to-replicate-this-project)
 	- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
 	- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
-	- [Setting Up the Bucket]()
+	- [Setting Up the Bucket](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
 	- [Terraform EMR Module]
 		- [Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
 		- [Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
