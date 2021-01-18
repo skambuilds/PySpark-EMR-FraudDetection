@@ -57,9 +57,10 @@ To replicate this project you will need:
 
 - An [AWS account](https://aws.amazon.com/it/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc) (if you are a student like us you can use an [Educate account](https://aws.amazon.com/it/education/awseducate/))
 - An [AWS EC2 key pair](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html) in order to execute the terraform module. You must provide the name of the key pair as descibed in the next section.
-- An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html), follow this guide to create an S3 bucket,
- Once you created the bucket, you should see it's name on the Buckets list. Click on it to be redirect on the bucket page.
- From the bucket page you have to create the following list of directories:
+- An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html), follow this guide to create an S3 bucket.
+ Once you created the bucket, you should see it's name on the Buckets list. 
+ * Click on it to be redirect on the bucket page.
+ * From the bucket page you have to create the following list of directories:
 	- **code/** - Will contain the PySpark fraud detection algorithm
 	- **input/** - Will contain the csv files of the kaggle competition
 	- **logs/** - This will be the EMR cluster log destination
