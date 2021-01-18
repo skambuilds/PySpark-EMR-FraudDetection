@@ -3,7 +3,7 @@
 # PySpark-EMR-FraudDetection
 A PySpark fraud detection project on AWS EMR with Terraform
 
-## Project Realization
+## Project Summary
 
 The realization of this project can be divided into the following phases:
 
