@@ -8,12 +8,14 @@ A PySpark fraud detection project on AWS EMR with Terraform
 The realization of this project can be divided into the following phases:
 
 - [Introduction](https://github.com/skambuilds/PySpark-EMR-FraudDetection#introduction)
-- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
-- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
-- [Terraform EMR Module	](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
-	- [Module Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-description)
-	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
-	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
+- [How to replicate this project]
+	- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
+	- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
+	- [Setting Up the Bucket]()
+	- [Terraform EMR Module]
+		- [Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
+		- [Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
+- [Terraform EMR Module Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
 - [Fraud Detection Model Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
 - [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
 - [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
@@ -85,149 +87,6 @@ The configuration process creates a file at **~/.aws/credentials** on MacOS and 
 		bucket_name = 's3://your-bucket-name'
 3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
 4. Go to the **input/** directory of your bucket and upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files.
-
-## Terraform EMR Module
-Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
-
-We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the [**Terraform/**](Terraform/) directory of this repo. This directory has been organized as follows:
-
-- [**Terraform/test.tf**](Terraform/test.tf) - Terraform configuration file
-- [**Terraform/emr-module/**](Terraform/emr-module/) - Contains the Terraform module code to create an AWS EMR cluster. The contents of this directory will be specified in the next section.
-- [**Terraform/configurations/**](Terraform/configurations/) - Contains a specific configuration file for the EMR cluster.
-
-In the list below we specify the data source and resource configurations we have used:
-
-- module.emr.aws_emr_cluster.cluster
-- module.emr.aws_iam_instance_profile.emr_ec2_instance_profile
-- module.emr.aws_iam_policy_document.ec2_assume_role
-- module.emr.aws_iam_policy_document.emr_assume_role
-- module.emr.aws_iam_role.emr_ec2_instance_profile
-- module.emr.aws_iam_role.emr_service_role
-- module.emr.aws_iam_role_policy_attachment.emr_ec2_instance_profile
-- module.emr.aws_iam_role_policy_attachment.emr_service_role
-- module.emr.aws_security_group.emr_master
-- module.emr.aws_security_group.emr_slave
-
-### Module Description
-On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows. In the following we describe the module structure and then we provide a guide to execute it.
-
-#### Inputs
-Inputs are variables we provide to a module in order for it to perform its task. The [**Terraform/emr-module/variables.tf**](Terraform/emr-module/variables.tf) contains the variables declaration.
-
-#### Configuration
-As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The [**Terraform/emr-module/main.tf**](Terraform/emr-module/main.tf) file contains this code.
-
-##### Identity and Access Management (IAM)
-An [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) is a declarative way to assemble IAM policy objects in Terraform. Here, it is being used to create a trust relationship for an IAM role such that the EC2 service can assume the associated role and make AWS API calls on our behalf.
-
-    data "aws_iam_policy_document" "emr_assume_role" {
-	  statement {
-	    effect = "Allow"
-
-	    principals {
-	      type        = "Service"
-	      identifiers = ["elasticmapreduce.amazonaws.com"]
-	    }
-
-	    actions = ["sts:AssumeRole"]
-	  }
-	}
-
-An [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) resource encapsulates trust relationships and permissions. For EMR, one role associates with the EMR service itself, while the other associates with the EC2 instances that make up the compute capacity for the EMR cluster. Linking the trust relationship policy above with a new IAM role is demonstrated below.
-
-    resource "aws_iam_role" "emr_ec2_instance_profile" {
-        name               = "${var.environment}JobFlowInstanceProfile"
-        assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
-    }
-
-To connect permissions with an IAM role, there is an [aws_iam_role_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) resource. In this case, we’re using a canned policy (referenced via Amazon Resource Name, or ARN) supplied by AWS. This policy comes close to providing a set of permissions (S3, DynamoDB, SQS, SNS, etc.) to the role.
-
-    resource "aws_iam_role_policy_attachment" "emr_ec2_instance_profile" {
-        role       = aws_iam_role.emr_ec2_instance_profile.name
-        policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role"
-    }
-
-Finally, there is [aws_iam_instance_profile](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile), which is a container for an IAM role that passes itself to an EC2 instance when the instance starts. This type of resource is only necessary when associating a role with an EC2 instance, not other AWS services.
-
-    resource "aws_iam_instance_profile" "emr_ec2_instance_profile" {
-        name = aws_iam_role.emr_ec2_instance_profile.name
-        role = aws_iam_role.emr_ec2_instance_profile.name
-    }
-
-
-##### Security groups
-Security groups house firewall rules for compute resources in a cluster. This module creates two security groups without rules. Rules are automatically populated by the EMR service (to support cross-node communication), but you can also grab a handle to the security group via its ID and add more rules through the [aws_security_group_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) resource.
-
-    resource "aws_security_group" "emr_master" {
-        vpc_id                 = "${var.vpc_id}"
-        revoke_rules_on_delete = true
-
-        tags = {
-            Name        = "sg${var.name}Master"
-            Project     = "${var.project}"
-            Environment = "${var.environment}"
-        }
-    }
-    
-A special thing to note here is the usage of revoke_rules_on_delete. This setting ensures that all the remaining rules contained inside a security group are removed before deletion. This is important because EMR creates cyclic security group rules (rules with other security groups referenced), which prevent security groups from deleting gracefully.
-
-##### EMR Cluster
-Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_cluster) resource. As you can see, almost all the module variables are being used in this resource. Here we have also specified a step section in order to execute the PySpark script which contains our fraud detection model algorithm.
-
-    resource "aws_emr_cluster" "cluster" {
-      name           = "${var.name}"
-      release_label  = "${var.release_label}"
-      applications   = "${var.applications}"
-      configurations = "${var.configurations}"
-    
-      ec2_attributes {
-        key_name                          = "${var.key_name}"
-        subnet_id                         = "${var.subnet_id}"
-        emr_managed_master_security_group = "${aws_security_group.emr_master.id}"
-        emr_managed_slave_security_group  = "${aws_security_group.emr_slave.id}"
-        instance_profile                  = "${aws_iam_instance_profile.emr_ec2_instance_profile.arn}"
-      }
-    
-      master_instance_group {
-        instance_type = "${var.instance_type}"
-        instance_count = "${var.master_instance_count}"
-      }    
-    
-      core_instance_group {
-        instance_type = "${var.instance_type}"
-        instance_count = "${var.core_instance_count}"
-      }
-    
-      bootstrap_action {
-        path = "${var.bootstrap_uri}"
-        name = "${var.bootstrap_name}"
-        args = "${var.bootstrap_args}"
-      }
-    
-      log_uri      = "${var.log_uri}"
-      service_role = "${aws_iam_role.emr_service_role.arn}"
-    
-      tags = {
-        Name        = "${var.name}"
-        Project     = "${var.project}"
-        Environment = "${var.environment}"
-      }
-      
-      step {
-    	action_on_failure = "${var.action_on_failure}"
-    	name   = "${var.step_name}"
-	
-    	hadoop_jar_step {
-      	  jar  = "${var.step_jar_path}"
-      	  args = "${var.step_args}"
-    	}
-      }
-    }
-
-The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster.
-
-#### Outputs
-As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The [**Terraform/emr-module/outputs.tf**](Terraform/emr-module/outputs.tf) file contains this setting.
 
 ### Module Configuration
 In this section we clarify how to configure the module. The [**Terraform/test.tf**](Terraform/test.tf) file contains the Terraform configuration. We describe its content in the following.
@@ -372,6 +231,149 @@ You can inspect the fraud detection model execution via the AWS Console. Just lo
 After the step execution has been completed we want to clean up all the AWS resources. This can be performed with the following command:
 
 	$ terraform destroy
+
+## Terraform EMR Module
+Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
+
+We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the [**Terraform/**](Terraform/) directory of this repo. This directory has been organized as follows:
+
+- [**Terraform/test.tf**](Terraform/test.tf) - Terraform configuration file
+- [**Terraform/emr-module/**](Terraform/emr-module/) - Contains the Terraform module code to create an AWS EMR cluster. The contents of this directory will be specified in the next section.
+- [**Terraform/configurations/**](Terraform/configurations/) - Contains a specific configuration file for the EMR cluster.
+
+In the list below we specify the data source and resource configurations we have used:
+
+- module.emr.aws_emr_cluster.cluster
+- module.emr.aws_iam_instance_profile.emr_ec2_instance_profile
+- module.emr.aws_iam_policy_document.ec2_assume_role
+- module.emr.aws_iam_policy_document.emr_assume_role
+- module.emr.aws_iam_role.emr_ec2_instance_profile
+- module.emr.aws_iam_role.emr_service_role
+- module.emr.aws_iam_role_policy_attachment.emr_ec2_instance_profile
+- module.emr.aws_iam_role_policy_attachment.emr_service_role
+- module.emr.aws_security_group.emr_master
+- module.emr.aws_security_group.emr_slave
+
+### Module Description
+On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows. In the following we describe the module structure and then we provide a guide to execute it.
+
+#### Inputs
+Inputs are variables we provide to a module in order for it to perform its task. The [**Terraform/emr-module/variables.tf**](Terraform/emr-module/variables.tf) contains the variables declaration.
+
+#### Configuration
+As inputs come in, they get layered into the data source and resource configurations listed above. Below are examples of each data source or resource type used in the EMR cluster module, along with some detail around its use. The [**Terraform/emr-module/main.tf**](Terraform/emr-module/main.tf) file contains this code.
+
+##### Identity and Access Management (IAM)
+An [aws_iam_policy_document](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) is a declarative way to assemble IAM policy objects in Terraform. Here, it is being used to create a trust relationship for an IAM role such that the EC2 service can assume the associated role and make AWS API calls on our behalf.
+
+    data "aws_iam_policy_document" "emr_assume_role" {
+	  statement {
+	    effect = "Allow"
+
+	    principals {
+	      type        = "Service"
+	      identifiers = ["elasticmapreduce.amazonaws.com"]
+	    }
+
+	    actions = ["sts:AssumeRole"]
+	  }
+	}
+
+An [aws_iam_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) resource encapsulates trust relationships and permissions. For EMR, one role associates with the EMR service itself, while the other associates with the EC2 instances that make up the compute capacity for the EMR cluster. Linking the trust relationship policy above with a new IAM role is demonstrated below.
+
+    resource "aws_iam_role" "emr_ec2_instance_profile" {
+        name               = "${var.environment}JobFlowInstanceProfile"
+        assume_role_policy = data.aws_iam_policy_document.ec2_assume_role.json
+    }
+
+To connect permissions with an IAM role, there is an [aws_iam_role_policy_attachment](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) resource. In this case, we’re using a canned policy (referenced via Amazon Resource Name, or ARN) supplied by AWS. This policy comes close to providing a set of permissions (S3, DynamoDB, SQS, SNS, etc.) to the role.
+
+    resource "aws_iam_role_policy_attachment" "emr_ec2_instance_profile" {
+        role       = aws_iam_role.emr_ec2_instance_profile.name
+        policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonElasticMapReduceforEC2Role"
+    }
+
+Finally, there is [aws_iam_instance_profile](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_instance_profile), which is a container for an IAM role that passes itself to an EC2 instance when the instance starts. This type of resource is only necessary when associating a role with an EC2 instance, not other AWS services.
+
+    resource "aws_iam_instance_profile" "emr_ec2_instance_profile" {
+        name = aws_iam_role.emr_ec2_instance_profile.name
+        role = aws_iam_role.emr_ec2_instance_profile.name
+    }
+
+
+##### Security groups
+Security groups house firewall rules for compute resources in a cluster. This module creates two security groups without rules. Rules are automatically populated by the EMR service (to support cross-node communication), but you can also grab a handle to the security group via its ID and add more rules through the [aws_security_group_rule](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group_rule) resource.
+
+    resource "aws_security_group" "emr_master" {
+        vpc_id                 = "${var.vpc_id}"
+        revoke_rules_on_delete = true
+
+        tags = {
+            Name        = "sg${var.name}Master"
+            Project     = "${var.project}"
+            Environment = "${var.environment}"
+        }
+    }
+    
+A special thing to note here is the usage of revoke_rules_on_delete. This setting ensures that all the remaining rules contained inside a security group are removed before deletion. This is important because EMR creates cyclic security group rules (rules with other security groups referenced), which prevent security groups from deleting gracefully.
+
+##### EMR Cluster
+Last, but not least, is the [aws_emr_cluster](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/emr_cluster) resource. As you can see, almost all the module variables are being used in this resource. Here we have also specified a step section in order to execute the PySpark script which contains our fraud detection model algorithm.
+
+    resource "aws_emr_cluster" "cluster" {
+      name           = "${var.name}"
+      release_label  = "${var.release_label}"
+      applications   = "${var.applications}"
+      configurations = "${var.configurations}"
+    
+      ec2_attributes {
+        key_name                          = "${var.key_name}"
+        subnet_id                         = "${var.subnet_id}"
+        emr_managed_master_security_group = "${aws_security_group.emr_master.id}"
+        emr_managed_slave_security_group  = "${aws_security_group.emr_slave.id}"
+        instance_profile                  = "${aws_iam_instance_profile.emr_ec2_instance_profile.arn}"
+      }
+    
+      master_instance_group {
+        instance_type = "${var.instance_type}"
+        instance_count = "${var.master_instance_count}"
+      }    
+    
+      core_instance_group {
+        instance_type = "${var.instance_type}"
+        instance_count = "${var.core_instance_count}"
+      }
+    
+      bootstrap_action {
+        path = "${var.bootstrap_uri}"
+        name = "${var.bootstrap_name}"
+        args = "${var.bootstrap_args}"
+      }
+    
+      log_uri      = "${var.log_uri}"
+      service_role = "${aws_iam_role.emr_service_role.arn}"
+    
+      tags = {
+        Name        = "${var.name}"
+        Project     = "${var.project}"
+        Environment = "${var.environment}"
+      }
+      
+      step {
+    	action_on_failure = "${var.action_on_failure}"
+    	name   = "${var.step_name}"
+	
+    	hadoop_jar_step {
+      	  jar  = "${var.step_jar_path}"
+      	  args = "${var.step_args}"
+    	}
+      }
+    }
+
+The MASTER instance group contains the head node in your cluster, or a group of head nodes with one elected leader via a consensus process. CORE usually contains nodes responsible for Hadoop Distributed File System (HDFS) storage, but more generally applies to instances you expect to stick around for the entire lifetime of your cluster.
+
+#### Outputs
+As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The [**Terraform/emr-module/outputs.tf**](Terraform/emr-module/outputs.tf) file contains this setting.
 
 ## Fraud Detection Model Description
 
