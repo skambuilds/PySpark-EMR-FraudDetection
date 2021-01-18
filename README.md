@@ -64,15 +64,12 @@ To replicate this project you will need:
 	- **input/** - Will contain the csv files of the kaggle competition
 	- **logs/** - This will be the EMR cluster log destination
 
-- The [AWS CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html) installed
-- Your AWS credentials configured locally.
+- The **AWS CLI** installed, [see how](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
+- Your AWS credentials configured locally:
+	1. Reach for the prompt/console on you system where you installed the AWS CLI
+	2. Type the following command:
 
-In order to perform this last point you can proceed as follows:
-
-1. Reach for the prompt/console on you system where you installed the AWS CLI
-2. Type the following command:
-
-    $ aws configure
+    	$ aws configure
 
 3. Follow the prompts to input your AWS Access Key ID and Secret Access Key, which you'll find [on this page](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Fconsole.aws.amazon.com%2Fiam%2Fhome%3Fstate%3DhashArgs%2523security_credential%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fiam&forceMobileApp=0&code_challenge=0PnMq9kl_B7Z_WeFz9d2bJFPoYxEFMahW6Zw0shoJzo&code_challenge_method=SHA-256).
 
