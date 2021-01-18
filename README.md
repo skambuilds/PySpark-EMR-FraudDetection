@@ -49,11 +49,13 @@ Categorical Features - Identity:
 The TransactionDT feature is a timedelta from a given reference datetime (not an actual timestamp).
 You can read more about the data from [this post by the competition host](https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203).
 
-## Terraform Installation
+## How to replicate this project
+
+### Terraform Installation
 
 To install Terraform please refer to [the official guide](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) in the HashiCorp website.
 
-## AWS Prerequisites
+### AWS Prerequisites
 
 To replicate this project you will need:
 
@@ -79,7 +81,7 @@ If you are using the Educate account you have also to provide the Session Token.
 
 The configuration process creates a file at **~/.aws/credentials** on MacOS and Linux or **%UserProfile%\.aws\credentials** on Windows, where your credentials are stored.
 
-## Setting Up the Bucket
+### Setting Up the Bucket
 
 1. Clone this repo on your local machine.
 2. Open the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
@@ -232,7 +234,7 @@ After the step execution has been completed we want to clean up all the AWS reso
 
 	$ terraform destroy
 
-## Terraform EMR Module
+## Terraform EMR Module Description
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
 
 We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the [**Terraform/**](Terraform/) directory of this repo. This directory has been organized as follows:
@@ -254,7 +256,6 @@ In the list below we specify the data source and resource configurations we have
 - module.emr.aws_security_group.emr_master
 - module.emr.aws_security_group.emr_slave
 
-### Module Description
 On a fundamental level, Terraform modules consist of inputs, outputs, and Terraform configuration. Inputs feed configuration, and when configuration gets evaluated, it computes outputs that can route into other workflows. In the following we describe the module structure and then we provide a guide to execute it.
 
 #### Inputs
