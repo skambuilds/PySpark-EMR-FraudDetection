@@ -65,7 +65,7 @@ To replicate this project you will need:
 	- **logs/** - This will be the EMR cluster log destination
 
 - The **AWS CLI** installed, [see how](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-- Your AWS credentials configured locally:
+- Configure your AWS credentials locally:
 	1. Reach for the prompt/console on you system where you installed the AWS CLI
 	2. Type the following command:
 
