@@ -92,7 +92,7 @@ Here we specify the AWS settings you need to perform:
 2. Open your local copy of the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
-3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service using the search tool located in the top left. Now select your bucket and navigate into the **code/** directory. Simply click on the *Upload* button on the top right, then click the *Add files* button and finally navigate on your filesystem and select the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
+3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service using the search tool. Now select your bucket and navigate into the **code/** directory. Simply click on the *Upload* button on the top right, then click the *Add files* button and finally navigate on your filesystem and select the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
 4. Create your [Kaggle Account](https://www.kaggle.com/)
 5. Download the kaggle competition dataset by clicking on the following four csv files and then clicking on the download button located on the top right corner of the dataset description table:
 	- [train_transaction.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=train_transaction.csv)
@@ -111,7 +111,7 @@ First of all we want to make sure that our AWS provider is properly configured. 
         region  = "us-east-1"
     }
 
-Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
+Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the AWS SDK uses the right set of credentials.
 
 From there, we create a module block in order to call the emr module. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo. The emr module code has been described in detail in the [in-depth information section](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module) of this document.
 
@@ -160,7 +160,7 @@ From there, we create a module block in order to call the emr module. The source
       ]
     }
 
-You have to update this module block with your own AWS parameters. More specifically you have to provide:
+You have to update this module block with your own AWS parameters. Open your local copy of the [**Terraform/test.tf**](Terraform/test.tf) file with a text editor and provide the following values:
 
 - `name` - A name for your EMR cluster
 - `vpc_id` - ID of VPC meant to hold the cluster
