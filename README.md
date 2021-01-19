@@ -14,9 +14,9 @@ This document has been split into three main parts:
 	- [Setting Up the Bucket](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
 	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
 	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
-- [In-depth Project Information]
-	- [Terraform EMR Module](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
-	- [Fraud Detection Model](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
+- [In-depth Project Information](https://github.com/skambuilds/PySpark-EMR-FraudDetection#in-depth-project-information)
+	- [Terraform EMR Module](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module)
+	- [Fraud Detection Model](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model)
 	- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
 	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
 
