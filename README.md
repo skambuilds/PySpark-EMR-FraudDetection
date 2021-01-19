@@ -187,16 +187,6 @@ For the following ones we have already set up the right values for you:
 - `step_name` - The name of the step
 - `step_jar_path` - Path to a JAR file run during the step
 
-Besides the EMR module, we also make use of a [template_file](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) resource to pull in a file containing the JSON required for [EMR cluster configuration](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html). Once retrieved, this resource renders the file contents (we have no variables defined, so no actual templating is going to occur) into the value of the configurations module variable. You can add your configuration rules simply updating the [**Terraform/configurations/default.json**](Terraform/configurations/default.json) file.
-
-    provider "template" {
-        version = "2.2.0"
-    }
-
-    data "template_file" "emr_configurations" {
-        template = file("configurations/default.json")
-    }
-
 ### Step 5: Module Execution
 Now you can use Terraform to create and destroy the cluster. The cluster creation includes a step phase which performs the fraud detection model execution. 
 
