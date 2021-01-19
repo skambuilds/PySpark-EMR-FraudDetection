@@ -101,17 +101,19 @@ Here we specify the AWS settings you need to perform:
 	- [test_identity.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=test_identity.csv)
 5. Now go back to your AWS Console, select the **input/** directory of your bucket and upload here the csv files you have just downloaded.
 
-### Module Configuration
+### Step 4: Module Configuration
 In this section we clarify how to configure the module. The [**Terraform/test.tf**](Terraform/test.tf) file contains the Terraform configuration. We describe its content in the following.
 
-First of all we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need to set in the provider block is a version and a region as shown below. Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
+First of all we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need to set in the provider block is a version and a region as shown below. We have already perform this task for you adding the following code snippet:
 
     provider "aws" {
         version = "3.21.0"
         region  = "us-east-1"
     }
 
-From there, we create a module block in order to call the emr module. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo. The emr module code has been described in detail in the [in-depth information section](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module) of this document.
+Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the underlying AWS SDK uses the right set of credentials.
+
+From there, we create a module block in order to call the emr module. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo. The emr module code has been described in detail in the [in-depth information section](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module) of this document.
 
     module "emr" {
       source = "./emr-module/"
@@ -158,12 +160,14 @@ From there, we create a module block in order to call the emr module. You have t
       ]
     }
 
-More specifically you have to provide: 
+You have to update this module block with your own AWS parameters. More specifically you have to provide:
 
-- `name` - Name of the EMR cluster
+- `name` - A name for your EMR cluster
 - `vpc_id` - ID of VPC meant to hold the cluster
+	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and create a new VPC or perform copy and paste on the "VPC ID" value of an already available VPC.
 - `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
 - `subnet_id` - Subnet used to house the EMR nodes
+	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Subnets* and create a new Subnet related to the VPC you have created previously or perform copy and paste on the "Subnet ID" value of a subnet which is related to the VPC you have chosen previously.
 - `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
 - `step_args` - List of command line arguments passed to the JAR file's main function when executed. In this case we use the spark-submit in order to execute the fraud detection model algorithm (you just have to put "your-bucket-name" in the s3 model code path)
 
@@ -193,7 +197,7 @@ Besides the EMR module, we also make use of a [template_file](https://registry.t
         template = file("configurations/default.json")
     }
 
-### Module Execution
+### Step 5: Module Execution
 Now you can use Terraform to create and destroy the cluster. The cluster creation includes a step phase which performs the fraud detection model execution. 
 
 First of all you have to navigate into the **Terraform/** directory of your local copy of this repository simply typing the following command on your system prompt/console:
