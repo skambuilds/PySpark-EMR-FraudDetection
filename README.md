@@ -164,10 +164,10 @@ You have to update this module block with your own AWS parameters. More specific
 
 - `name` - A name for your EMR cluster
 - `vpc_id` - ID of VPC meant to hold the cluster
-	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and create a new VPC or perform copy and paste on the "VPC ID" value of an already available VPC.
+	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and perform copy and paste on the "VPC ID" value of an already available VPC or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#create_vpc) to create a new VPC.
 - `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
 - `subnet_id` - Subnet used to house the EMR nodes
-	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Subnets* and create a new Subnet related to the VPC you have created previously or perform copy and paste on the "Subnet ID" value of a subnet which is related to the VPC you have chosen previously.
+	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Subnets* and perform copy and paste on the "Subnet ID" value of a subnet which is related to the VPC you have chosen previously or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#add_subnet) to create a new Subnet related to the VPC you have created previously.
 - `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
 - `step_args` - List of command line arguments passed to the JAR file's main function when executed. In this case we use the spark-submit in order to execute the fraud detection model algorithm (you just have to put "your-bucket-name" in the s3 model code path)
 
