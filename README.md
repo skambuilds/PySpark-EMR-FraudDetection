@@ -5,20 +5,20 @@ A PySpark fraud detection project on AWS EMR with Terraform
 
 ## Project Summary
 
-The realization of this project can be divided into the following phases:
+This document has been split into three main parts:
 
 - [Introduction](https://github.com/skambuilds/PySpark-EMR-FraudDetection#introduction)
-- [How to replicate this project](https://github.com/skambuilds/PySpark-EMR-FraudDetection/blob/main/README.md#how-to-replicate-this-project)
+- [How to Replicate this Project](https://github.com/skambuilds/PySpark-EMR-FraudDetection/blob/main/README.md#how-to-replicate-this-project)
 	- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
 	- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
 	- [Setting Up the Bucket](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
-	- [Terraform EMR Module]
-		- [Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
-		- [Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
-- [Terraform EMR Module Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
-- [Fraud Detection Model Description](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
-- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
-- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
+	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
+	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
+- [In-depth Project Information]
+	- [Terraform EMR Module](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
+	- [Fraud Detection Model](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model-description)
+	- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
+	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
 
 Let's dive into them.
 
@@ -234,7 +234,9 @@ After the step execution has been completed we want to clean up all the AWS reso
 
 	$ terraform destroy
 
-## Terraform EMR Module Description
+## In-depth Project Information
+
+### Terraform EMR Module
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
 
 We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the [**Terraform/**](Terraform/) directory of this repo. This directory has been organized as follows:
@@ -376,7 +378,7 @@ The MASTER instance group contains the head node in your cluster, or a group of 
 #### Outputs
 As configuration gets evaluated, resources compute values, and those values can be emitted from the module as outputs. These are typically IDs or DNS endpoints for resources within the module. In this case, we emit the cluster ID so that you can use it as an argument to out-of-band API calls, security group IDs so that you can add extra security group rules, and the head node FQDN so that you can use SSH to run commands or check status. The [**Terraform/emr-module/outputs.tf**](Terraform/emr-module/outputs.tf) file contains this setting.
 
-## Fraud Detection Model Description
+### Fraud Detection Model
 
 In this section we are going to describe the structure of our fraud detection algorithm. The code has been organized into five main parts:
 1. Competition Data Loading from the S3 Bucket
@@ -385,7 +387,7 @@ In this section we are going to describe the structure of our fraud detection al
 4. Model Training and Execution
 5. Model Evaluation
 
-### Competition Data Loading from the S3 Bucket
+#### Competition Data Loading from the S3 Bucket
 In this phase we simply load the data csv files from the S3 bucket and we join the *transaction dataset* with the *identity dataset*.
 
 	train_ts = spark.read.csv(train_ts_location, header = True, inferSchema = True)
@@ -396,7 +398,7 @@ In this phase we simply load the data csv files from the S3 bucket and we join t
 	test_id = spark.read.csv(test_id_location, header = True, inferSchema = True)
 	test_df = test_ts.join(test_id, "TransactionID", how='left')
 
-### Feature Selection
+#### Feature Selection
 Exploring the dataset we noticed that there were so many NAN values, consequently we take inspiration from this [Exploratory Data Analysis](https://www.kaggle.com/cdeotte/eda-for-columns-v-and-id) to perform the feature selection. The authors analyzed all the columns of train_transaction.csv to determine which columns are related by the number of NANs present. They see that D1 relates to a subset of V281 thru V315, and D11 relates to V1 thru V11. They also find groups of Vs with similar NAN structure. And they see that M1, M2, M3 related and M8, M9 related.
 
 The V columns appear to be redundant and correlated. Therefore for each block of V columns with similar NAN structure, we could find subsets within the block that are correlated. Then we can replace the entire block with one column from each subset.
@@ -429,7 +431,7 @@ For example in block V1-V11, we see that the subsets [[1],[2,3],[4,5],[6,7],[8,9
 	v += [332, 325, 335, 338] 
 	cols += ['V'+str(x) for x in v]
 
-### Feature Engineering
+#### Feature Engineering
 The preliminary step we made in order to complete this phase was a classification of the dataset columns based on their data type. We built two main sets:
 1. Categorical columns
 2. Non categorical columns
@@ -462,7 +464,7 @@ Finally, we applied five important tranformers/estimators from the PySpark.ml li
 
 After applying them, the data will be ready to build the model.	
 
-#### Model Pipeline
+##### Model Pipeline
 We use a pipeline to chain multiple Transformers and Estimators together to specify our machine learning workflow. The Pipeline’s stages are specified as an ordered array.
 First of all we determine categorical columns. Then, it indexes each categorical column using the StringIndexer. After that, it converts the indexed categories into one-hot encoded variables. The resulting output has the binary vectors appended to the end of each row. We use the StringIndexer again to encode our labels to label indices. Next, we use the VectorAssembler to combine all the feature columns into a single vector column. As a final step, we use StandardScaler to distribute our features normally.
 
@@ -490,7 +492,7 @@ Run the stages as a Pipeline. This puts the data through all of the feature tran
 	selectedCols = ['label', 'features'] + cols
 	df = df.select(selectedCols)    
 
-### Model Training and Execution
+#### Model Training and Execution
 The first step of this phase has been splitting the data into training and test sets (30% held out for testing).
 
 	train, test = df.randomSplit([0.7, 0.3], seed=2021)
@@ -552,7 +554,7 @@ In the following we show the classifiers initialization and the call to the `cla
 		classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
 		classifier_executor(classifier, train, test)
 		
-### Model Evaluation
+#### Model Evaluation
 
 In order to perform the model evaluation the `classifier_executor` function calls the `metrics_calc` function. Here we use the BinaryClassificationEvaluator to evaluate our models. 
 Note that the default metric for the BinaryClassificationEvaluator is areaUnderROC. ROC is a probability curve and AUC represents degree or measure of separability. ROC tells how much model is capable of distinguishing between classes. Higher the AUC, better the model is at distinguishing between fraudolent or no fraudolent transactions.
@@ -573,13 +575,13 @@ Combining these results we compute the following metrics:
 
 The first two metrics have been chosen because they provide information about the performance in terms of fraudulent transactions correctly classified, while the other two have been chosen in order to evaluate the algorithm performance in terms of correct and incorrect classification of the legitimate transactions.
 
-## Results and Conclusions
+### Results and Conclusions
 
 The dataset has been split as follows:
 - Training Dataset Count: 413264
 - Test Dataset Count: 177276
 
-### Qualitative results
+#### Qualitative results
 
 Below we show the results of the chosen classifiers:
 - Logistic Regression results:
@@ -621,7 +623,7 @@ In order to contain this effect and consequently improving the performance of th
 
 This two options could represent the future improvements of our work.
 
-### Quantative results
+#### Quantative results
 
 The following table indicates the execution time of our algorithm in three different cluster configurations:
 \- | Configuration 1 | Configuration 2 | Configuration 3
@@ -638,7 +640,7 @@ The following table indicates the execution time of our algorithm in three diffe
 
 We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
 
-## References
+### References
 
 - [Brent Lemieux - Getting Started with PySpark on AWS EMR](https://towardsdatascience.com/getting-started-with-pyspark-on-amazon-emr-c85154b6b921)
 - [Hector Castro - Azavea - A Terraform Module for Amazon Elastic MapReduce](https://www.azavea.com/blog/2017/12/06/a-terraform-module-for-amazon-emr/)
