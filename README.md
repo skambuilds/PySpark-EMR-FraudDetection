@@ -82,9 +82,9 @@ Here we specify the AWS settings you need to perform:
 	
 	- Follow the prompts to input your AWS Access Key ID and Secret Access Key, which you'll find [on this page](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Fconsole.aws.amazon.com%2Fiam%2Fhome%3Fstate%3DhashArgs%2523security_credential%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fiam&forceMobileApp=0&code_challenge=0PnMq9kl_B7Z_WeFz9d2bJFPoYxEFMahW6Zw0shoJzo&code_challenge_method=SHA-256).
 
-If you are using the Educate account you have also to provide the Session Token. You can find these information in the Vocareum AWS console login page by clicking on the *Account Details* button. 
+	If you are using the Educate account you have also to provide the Session Token. You can find these information in the Vocareum AWS console login page by clicking on the *Account Details* button. 
 
-The configuration process creates a file at **~/.aws/credentials** on MacOS and Linux or **%UserProfile%\.aws\credentials** on Windows, where your credentials are stored.
+	The configuration process creates a file at **~/.aws/credentials** on MacOS and Linux or **%UserProfile%\.aws\credentials** on Windows, where your credentials are stored.
 
 ### Step 3: Setting Up the Bucket
 
@@ -92,14 +92,14 @@ The configuration process creates a file at **~/.aws/credentials** on MacOS and 
 2. Open your local copy of the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
-3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service using the search tool located in the top left. Now select your bucket and navigate into the **code/** directory. Simply click on the **Upload** button on the top right, then click the **Add files** button and finally navigate on your filesystem and select the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
+3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service using the search tool located in the top left. Now select your bucket and navigate into the **code/** directory. Simply click on the *Upload* button on the top right, then click the *Add files* button and finally navigate on your filesystem and select the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
 4. Create your [Kaggle Account](https://www.kaggle.com/)
 5. Download the kaggle competition dataset by clicking on the following four csv files and then clicking on the download button located on the top right corner of the dataset description table:
 	- [train_transaction.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=train_transaction.csv)
 	- [train_identity.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=train_identity.csv)
 	- [test_transaction.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=test_transaction.csv)
 	- [test_identity.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=test_identity.csv)
-5. Now go to the **input/** directory of your bucket and upload the csv files you have just downloaded.
+5. Now go back to your AWS Console, select the **input/** directory of your bucket and upload here the csv files you have just downloaded.
 
 ### Module Configuration
 In this section we clarify how to configure the module. The [**Terraform/test.tf**](Terraform/test.tf) file contains the Terraform configuration. We describe its content in the following.
@@ -111,7 +111,7 @@ First of all we want to make sure that our AWS provider is properly configured. 
         region  = "us-east-1"
     }
 
-From there, we create a module block in order to call the emr module we described previously. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo.
+From there, we create a module block in order to call the emr module. You have to update this module block with your own AWS parameters. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo. The emr module code has been described in detail in the [in-depth information section](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module) of this document.
 
     module "emr" {
       source = "./emr-module/"
@@ -194,28 +194,28 @@ Besides the EMR module, we also make use of a [template_file](https://registry.t
     }
 
 ### Module Execution
-Now you can use Terraform to create and destroy the cluster. First of all you have to navigate into the **Terraform/** directory of your local copy of this repo. Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file.
+Now you can use Terraform to create and destroy the cluster. The cluster creation includes a step phase which performs the fraud detection model execution. 
 
-	$ cd Terraform/
+First of all you have to navigate into the **Terraform/** directory of your local copy of this repository simply typing the following command on your system prompt/console:
+
+	$ cd tilde/PySpark-EMR-FraudDetection/Terraform/
 
 #### Initialize the directory
-When you create a new configuration — or check out an existing configuration from version control — you need to initialize the directory with `terraform init`.
-
-Terraform uses a plugin-based architecture to support hundreds of infrastructure and service providers. Initializing a configuration directory downloads and installs providers used in the configuration, which in this case is the `aws` provider. Subsequent commands will use local settings and data during initialization.
+Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file. In order to complete this task you need to initialize the directory with the following command:
 
 	$ terraform init
 
-Terraform downloads the aws provider and installs it in a hidden subdirectory of the current working directory. The output shows which version of the plugin was installed.
+Terraform uses a plugin-based architecture to support hundreds of infrastructure and service providers. Initializing a configuration directory downloads and installs providers used in the configuration, which in this case is the `aws` provider. The output shows which version of the plugin was installed. Subsequent commands will use local settings and data during initialization.
 
 #### Format and validate the configuration
 
-The `terraform fmt` command automatically updates configurations in the current directory for easy readability and consistency.
+Now execute the following command which automatically updates configurations in the current directory for easy readability and consistency.
 
 	$ terraform fmt
 
 Terraform will return the names of the files it formatted. In this case, the configuration file was already formatted correctly, so Terraform won't return any file names.
 
-If you are copying configuration snippets or just want to make sure your configuration is syntactically valid and internally consistent, the built in `terraform validate` command will check and report errors within modules, attribute names, and value types.
+If you are copying configuration snippets or just want to make sure your configuration is syntactically valid and internally consistent, the following command will check and report errors within modules, attribute names, and value types.
 
 	$ terraform validate
 
@@ -223,11 +223,11 @@ If your configuration is valid, Terraform will return a success message.
 
 #### Create Infrastructure
 
-First, we assemble a plan with the available configuration. This gives Terraform an opportunity to inspect the state of your AWS account and determine exactly what it needs to do to make it match our desired configuration.
+First, you have to assemble a plan with the available configuration. This gives Terraform an opportunity to inspect the state of your AWS account and determine exactly what it needs to do to make it match our desired configuration:
 
 	$ terraform plan -out=test.tfplan
 	
-From here, we inspect the command output (the infrastructure equivalent of a diff) of all the data sources and resources Terraform plans to create, modify, or destroy. If that looks good, the next step is to apply the plan.
+From here, you can inspect the command output of all the data sources and resources Terraform plans to create, modify, or destroy. Now the next step is to apply the plan:
 
 	$ terraform apply test.tfplan
 
@@ -237,7 +237,7 @@ From here, we inspect the command output (the infrastructure equivalent of a dif
 	
 #### Monitoring the Step Execution
 
-You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status. You can inspect the model result by clicking on "view logs" and selecting the **stdout** log file.
+You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status. You can inspect the model result by clicking on *view logs* and selecting the **stdout** log file.
 
 #### Destroy Infrastructure
 
@@ -247,12 +247,14 @@ After the step execution has been completed we want to clean up all the AWS reso
 
 ## In-depth Project Information
 
+In this section we provide a detail description of the Terraform EMR Module and the Fraud Detection Model algorithm with a consequent examination of the obteined results.
+
 ### Terraform EMR Module
 Modules in Terraform are units of Terraform configuration managed as a group. For example, an Amazon EMR module needs configuration for an Amazon EMR cluster resource, but it also needs multiple security groups, IAM roles, and an instance profile.
 
 We encapsulated all of the necessary configuration into a reusable module in order to manage the infrastructure complexity only one-time. You can find the Terraform code in the [**Terraform/**](Terraform/) directory of this repo. This directory has been organized as follows:
 
-- [**Terraform/test.tf**](Terraform/test.tf) - Terraform configuration file
+- [**Terraform/test.tf**](Terraform/test.tf) - Terraform configuration file which you modified following the above guidelines
 - [**Terraform/emr-module/**](Terraform/emr-module/) - Contains the Terraform module code to create an AWS EMR cluster. The contents of this directory will be specified in the next section.
 - [**Terraform/configurations/**](Terraform/configurations/) - Contains a specific configuration file for the EMR cluster.
 
