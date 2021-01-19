@@ -9,16 +9,18 @@ This document has been split into three main parts:
 
 - [Introduction](https://github.com/skambuilds/PySpark-EMR-FraudDetection#introduction)
 - [How to Replicate this Project](https://github.com/skambuilds/PySpark-EMR-FraudDetection/blob/main/README.md#how-to-replicate-this-project)
-	- [Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
-	- [AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
-	- [Setting Up the Bucket](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
-	- [Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
-	- [Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
+	- [Step 1: Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-installation)
+	- [Step 2: AWS Prerequisites](https://github.com/skambuilds/PySpark-EMR-FraudDetection#aws-prerequisites)
+	- [Step 3: Setting Up the Bucket](https://github.com/skambuilds/PySpark-EMR-FraudDetection#setting-up-the-bucket)
+	- [Step 4: Module Configuration](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-configuration)
+	- [Step 5: Module Execution](https://github.com/skambuilds/PySpark-EMR-FraudDetection#module-execution)
 - [In-depth Project Information](https://github.com/skambuilds/PySpark-EMR-FraudDetection#in-depth-project-information)
 	- [Terraform EMR Module](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module)
 	- [Fraud Detection Model](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model)
 	- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
 	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
+
+In the introduction we provide a brief overview of the context we are investigating. After that, we proceed with a step by step guide to replicate this project on your machine. Finally we explain more deeply the organization of the terraform module code and the design choices of our fraud detection algorithm.
 
 Let's dive into them.
 
@@ -51,29 +53,32 @@ You can read more about the data from [this post by the competition host](https:
 
 ## How to replicate this project
 
-### Terraform Installation
+To replicate this project you will need to accomplish the following steps:
 
-To install Terraform please refer to [the official guide](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) in the HashiCorp website.
+### Step 1: Terraform Installation
 
-### AWS Prerequisites
+First of all you need to install Terraform. Please refer to [the official guide](https://learn.hashicorp.com/tutorials/terraform/install-cli?in=terraform/aws-get-started) in the HashiCorp website.
 
-To replicate this project you will need:
+### Step 2: AWS Prerequisites
 
-- An [AWS account](https://aws.amazon.com/it/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc) (if you are a student like us you can use an [Educate account](https://aws.amazon.com/it/education/awseducate/))
-- An [AWS EC2 key pair](https://docs.aws.amazon.com/emr/latest/ReleaseGuide/emr-configure-apps.html) in order to execute the terraform module. You must provide the name of the key pair as descibed in the next section.
-- An [AWS S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html), follow this guide to create an S3 bucket.
-  - Once you created the bucket, you should see its name on the Buckets list - click on it to be redirect on the bucket page.
-  - From the bucket page you have to create the following list of directories (by clicking on the "Create folder" button, and assigning a name to the folder and leave all the rest untauched):
-	- **code/** - Will contain the PySpark fraud detection algorithm
-	- **input/** - Will contain the csv files of the kaggle competition
-	- **logs/** - This will be the EMR cluster log destination
+Here we specify the AWS settings you need to perform:
 
-- **AWS CLI** [see how](https://docs.aws.amazon.com/cli/latest/userguide/cli-chap-install.html)
-- Configure your AWS credentials locally:
+1. Create an **AWS account**. Simply visit this [page](https://aws.amazon.com/it/free/?all-free-tier.sort-by=item.additionalFields.SortRank&all-free-tier.sort-order=asc) to create a free account. If you are a student like us you can apply for an [Educate account](https://aws.amazon.com/it/education/awseducate/).
+2. Create an **AWS EC2 key pair**. Follow the [official guide](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-key-pairs.html#prepare-key-pair) to perform this task. You must provide the name of the key pair in order to execute the terraform module as descibed in the next section.
+3. Create an **AWS S3 bucket**. To accomplish this step please refer to this [guide](https://docs.aws.amazon.com/AmazonS3/latest/user-guide/create-bucket.html).
+	- Once you created the bucket, you should see its name on the Buckets list - click on it to enter the bucket page.
+  	- From the bucket page you have to create the following list of directories:
+		- **code/** - Will contain the PySpark fraud detection algorithm
+		- **input/** - Will contain the csv files of the kaggle competition
+		- **logs/** - This will be the EMR cluster log destination
+		
+		Just click on the "Create folder" button, then assign a name to the new folder and leave all the rest untouched.
+4. Download and install the **AWS CLI Ver. 2**. To complete this task please refer to the [official guide](https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html).
+5. Configure your AWS credentials locally:
 	- Reach for the prompt/console on your system where you installed the AWS CLI
 	- Type the following command:
-
-    	$ aws configure
+	
+		$ aws configure
 	
 	- Follow the prompts to input your AWS Access Key ID and Secret Access Key, which you'll find [on this page](https://signin.aws.amazon.com/signin?redirect_uri=https%3A%2F%2Fconsole.aws.amazon.com%2Fiam%2Fhome%3Fstate%3DhashArgs%2523security_credential%26isauthcode%3Dtrue&client_id=arn%3Aaws%3Aiam%3A%3A015428540659%3Auser%2Fiam&forceMobileApp=0&code_challenge=0PnMq9kl_B7Z_WeFz9d2bJFPoYxEFMahW6Zw0shoJzo&code_challenge_method=SHA-256).
 
@@ -81,14 +86,20 @@ If you are using the Educate account you have also to provide the Session Token.
 
 The configuration process creates a file at **~/.aws/credentials** on MacOS and Linux or **%UserProfile%\.aws\credentials** on Windows, where your credentials are stored.
 
-### Setting Up the Bucket
+### Step 3: Setting Up the Bucket
 
-1. Clone this repo on your local machine.
-2. Open the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
+1. Clone this repository on your local machine.
+2. Open your local copy of the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
-3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service. Now select your bucket and navigate into the **code/** directory. Here you have to upload the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
-4. Go to the **input/** directory of your bucket and upload the [kaggle competition data](https://www.kaggle.com/c/ieee-fraud-detection/data) csv files.
+3. Login into your [AWS Console](https://aws.amazon.com/it/console/) and choose the S3 service using the search tool located in the top left. Now select your bucket and navigate into the **code/** directory. Simply click on the **Upload** button on the top right, then click the **Add files** button and finally navigate on your filesystem and select the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file you have just modified.
+4. Create your [Kaggle Account](https://www.kaggle.com/)
+5. Download the kaggle competition dataset by clicking on the following four csv files and then clicking on the download button located on the top right corner of the dataset description table:
+	- [train_transaction.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=train_transaction.csv)
+	- [train_identity.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=train_identity.csv)
+	- [test_transaction.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=test_transaction.csv)
+	- [test_identity.csv](https://www.kaggle.com/c/ieee-fraud-detection/data?select=test_identity.csv)
+5. Now go to the **input/** directory of your bucket and upload the csv files you have just downloaded.
 
 ### Module Configuration
 In this section we clarify how to configure the module. The [**Terraform/test.tf**](Terraform/test.tf) file contains the Terraform configuration. We describe its content in the following.
