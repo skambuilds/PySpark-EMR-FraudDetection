@@ -192,7 +192,7 @@ Now you can use Terraform to create and destroy the cluster. The cluster creatio
 
 First of all you have to navigate into the **Terraform/** directory of your local copy of this repository simply typing the following command on your system prompt/console:
 
-	$ cd tilde/PySpark-EMR-FraudDetection/Terraform/
+	$ cd ~/PySpark-EMR-FraudDetection/Terraform/
 
 #### Initialize the directory
 Terraform loads all files in the working directory that end in **.tf**, in our case the **test.tf** configuration file. In order to complete this task you need to initialize the directory with the following command:
