@@ -4,9 +4,6 @@
 A PySpark fraud detection project on AWS EMR with Terraform
 
 ## Project Summary
-
-This document has been split into three main parts:
-
 - [Introduction](https://github.com/skambuilds/PySpark-EMR-FraudDetection#introduction)
 - [How to Replicate this Project](https://github.com/skambuilds/PySpark-EMR-FraudDetection/blob/main/README.md#how-to-replicate-this-project)
 	- [Step 1: Terraform Installation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#step-1-terraform-installation)
@@ -21,8 +18,6 @@ This document has been split into three main parts:
 	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
 
 In the introduction we provide a brief overview of the context we are investigating. After that, we proceed with a step by step guide to replicate this project on your machine. Finally we explain more deeply the organization of the terraform module code and the design choices of our fraud detection algorithm.
-
-Let's dive into them.
 
 ## Introduction
 In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
