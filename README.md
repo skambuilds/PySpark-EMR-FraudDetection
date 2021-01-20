@@ -108,13 +108,15 @@ In this section we clarify how to configure the module.
         	region  = "us-east-1"
     	}
 
-* After we define a module block for EMR - replace its values as follows:
+* After that we define a module block for EMR - `module "emr"` - here you have to set up the following values:
 	- `name` - A name for your EMR cluster
 	- `vpc_id` - ID of VPC meant to hold the cluster
-		- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and perform copy and paste on the "VPC ID" value of an already available VPC or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#create_vpc) to create a new VPC.
+		
+		In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and perform copy and paste on the "VPC ID" value of an already available VPC or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#create_vpc) to create a new VPC.
 	- `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
 	- `subnet_id` - Subnet used to house the EMR nodes
-	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Subnets* and perform copy and paste on the "Subnet ID" value of a subnet which is related to the VPC you have chosen previously or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#add_subnet) to create a new Subnet related to the VPC you have created previously.
+	
+		In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Subnets* and perform copy and paste on the "Subnet ID" value of a subnet which is related to the VPC you have chosen previously or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#add_subnet) to create a new Subnet related to the VPC you have created previously.
 	- `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
 	- `step_args` - List of command line arguments passed to the JAR file's main function when executed. In this case we use the spark-submit in order to execute the fraud detection model algorithm (you just have to put "your-bucket-name" in the s3 model code path)
 
@@ -134,7 +136,7 @@ In this section we clarify how to configure the module.
 	- `step_name` - The name of the step
 	- `step_jar_path` - Path to a JAR file run during the step
 
-	More info on the emr module can be fund [here].(https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module)
+More info on the emr module can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module).
 
 ### Step 5: Module Execution
 Now you can use Terraform to create and destroy the cluster. The cluster creation includes a step phase which performs the fraud detection model execution. 
