@@ -97,90 +97,44 @@ Here we specify the AWS settings you need to perform:
 5. Now go back to your AWS Console, select the **input/** directory of your bucket and upload here the csv files you have just downloaded.
 
 ### Step 4: Module Configuration
-In this section we clarify how to configure the module. The [**Terraform/test.tf**](Terraform/test.tf) file contains the Terraform configuration. We describe its content in the following.
+In this section we clarify how to configure the module. 
 
-First of all we want to make sure that our AWS provider is properly configured. If you make use of named AWS credential profiles, then all you need to set in the provider block is a version and a region as shown below. We have already perform this task for you adding the following code snippet:
+* Open the [**Terraform/test.tf**](Terraform/test.tf) file, that contains the Terraform configuration.
 
-    provider "aws" {
-        version = "3.21.0"
-        region  = "us-east-1"
-    }
+	The initial four lines describe the provider block for aws. We have already set up this part for you, so keep it unchanged.
 
-Furthermore, exporting AWS_PROFILE with the desired AWS credential profile name before invoking Terraform ensures that the AWS SDK uses the right set of credentials.
+    	provider "aws" {
+        	version = "3.21.0"
+        	region  = "us-east-1"
+    	}
 
-From there, we create a module block in order to call the emr module. The source argument has been set to the path of the emr module code which you can find in the [**Terraform/emr-module/**](Terraform/emr-module/) directory of this repo. The emr module code has been described in detail in the [in-depth information section](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module) of this document.
-
-    module "emr" {
-      source = "./emr-module/"
-
-      name          = "cluster-name"
-      vpc_id        = "vpc-id"
-      release_label = "emr-5.32.0"
-
-      applications = [
-        "Hive",
-        "Spark",
-        "Livy",
-        "JupyterEnterpriseGateway",
-      ]
-
-      configurations        = data.template_file.emr_configurations.rendered
-      key_name              = "key-pair-name"
-      subnet_id             = "subnet-id"
-      instance_type         = "m5.xlarge"
-      master_instance_count = "1"
-      core_instance_count   = "2"
-
-      bootstrap_name = "runif"
-      bootstrap_uri  = "s3://elasticmapreduce/bootstrap-actions/run-if"
-      bootstrap_args = ["instance.isMaster=true", "echo running on master node"]
-
-      log_uri     = "s3://your-bucket-name/logs/"
-      project     = "FraudDetection"
-      environment = "Test"
-      
-      action_on_failure = "CONTINUE"
-      step_name = "FraudDetectionModel"
-      step_jar_path = "command-runner.jar"
-
-      step_args = [
-    	"spark-submit",
-    	"--deploy-mode",
-    	"client",
-    	"--master",
-    	"yarn",
-    	"--conf",
-    	"spark.yarn.submit.waitAppCompletion=true",    	
-    	"s3://your-bucket-name/code/fraud_detection_model.py"
-      ]
-    }
-
-You have to update this module block with your own AWS parameters. Open your local copy of the [**Terraform/test.tf**](Terraform/test.tf) file with a text editor and provide the following values:
-
-- `name` - A name for your EMR cluster
-- `vpc_id` - ID of VPC meant to hold the cluster
-	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and perform copy and paste on the "VPC ID" value of an already available VPC or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#create_vpc) to create a new VPC.
-- `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
-- `subnet_id` - Subnet used to house the EMR nodes
+* After we define a module block for EMR - replace its values as follows:
+	- `name` - A name for your EMR cluster
+	- `vpc_id` - ID of VPC meant to hold the cluster
+		- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Your VPC* and perform copy and paste on the "VPC ID" value of an already available VPC or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#create_vpc) to create a new VPC.
+	- `key_name` - EC2 Key pair name (you have to insert the key pair name you created previously)
+	- `subnet_id` - Subnet used to house the EMR nodes
 	- In order to retrieve this information just login into your AWS Console and search for the VPC Dashboard using the search tool. Then go to *Subnets* and perform copy and paste on the "Subnet ID" value of a subnet which is related to the VPC you have chosen previously or follow this [guide](https://docs.aws.amazon.com/directoryservice/latest/admin-guide/gsg_create_vpc.html#add_subnet) to create a new Subnet related to the VPC you have created previously.
-- `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
-- `step_args` - List of command line arguments passed to the JAR file's main function when executed. In this case we use the spark-submit in order to execute the fraud detection model algorithm (you just have to put "your-bucket-name" in the s3 model code path)
+	- `log_uri` - S3 URI of the EMR log destination (you just have to put "your-bucket-name" in the path)
+	- `step_args` - List of command line arguments passed to the JAR file's main function when executed. In this case we use the spark-submit in order to execute the fraud detection model algorithm (you just have to put "your-bucket-name" in the s3 model code path)
 
-For the following ones we have already set up the right values for you:
-- `release_label` - EMR release version to use
-- `applications` - A list of EMR release applications
-- `configurations` - JSON array of EMR application configurations
-- `instance_type` - Instance type for the master and core instance groups
-- `master_instance_count` - Number of master instances
-- `core_instance_count` - Number of core instances
-- `bootstrap_name` - Name for the bootstrap action
-- `bootstrap_uri` - S3 URI for the bootstrap action script
-- `bootstrap_args` - A list of arguments to the bootstrap action script
-- `project` - Name of project this cluster is for
-- `environment` - Name of environment this cluster is targeting
-- `action_on_failure` - The action to take if the step fails. Valid values: `TERMINATE_JOB_FLOW`, `TERMINATE_CLUSTER`, `CANCEL_AND_WAIT`, and `CONTINUE`
-- `step_name` - The name of the step
-- `step_jar_path` - Path to a JAR file run during the step
+	For the following ones we have already set up the right values for you:
+	- `release_label` - EMR release version to use
+	- `applications` - A list of EMR release applications
+	- `configurations` - JSON array of EMR application configurations
+	- `instance_type` - Instance type for the master and core instance groups
+	- `master_instance_count` - Number of master instances
+	- `core_instance_count` - Number of core instances
+	- `bootstrap_name` - Name for the bootstrap action
+	- `bootstrap_uri` - S3 URI for the bootstrap action script
+	- `bootstrap_args` - A list of arguments to the bootstrap action script
+	- `project` - Name of project this cluster is for
+	- `environment` - Name of environment this cluster is targeting
+	- `action_on_failure` - The action to take if the step fails. Valid values: `TERMINATE_JOB_FLOW`, `TERMINATE_CLUSTER`, `CANCEL_AND_WAIT`, and `CONTINUE`
+	- `step_name` - The name of the step
+	- `step_jar_path` - Path to a JAR file run during the step
+
+	More info on the emr module can be fund [here].(https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module)
 
 ### Step 5: Module Execution
 Now you can use Terraform to create and destroy the cluster. The cluster creation includes a step phase which performs the fraud detection model execution. 
