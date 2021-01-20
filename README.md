@@ -184,7 +184,7 @@ You can inspect the fraud detection model execution via the AWS Console. Just lo
 
 #### Destroy Infrastructure
 
-After the step execution has been completed we want to clean up all the AWS resources. This can be performed with the following command:
+After that the execution step has been completed we want to clean up all the AWS resources. This can be performed with the following command:
 
 	$ terraform destroy
 
