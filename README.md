@@ -83,7 +83,9 @@ Here we specify the AWS settings you need to perform:
 
 ### Step 3: Setting Up the Bucket
 
-1. Clone this repository on your local machine.
+1. Clone this repository on your local machine:
+
+		$ git clone https://github.com/skambuilds/PySpark-EMR-FraudDetection.git
 2. Open your local copy of the [**ModelCode/fraud_detection_model.py**](ModelCode/fraud_detection_model.py) file with a text editor and insert the name of the bucket you created previously in the following variable:
 	
 		bucket_name = 's3://your-bucket-name'
