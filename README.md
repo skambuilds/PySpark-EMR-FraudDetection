@@ -180,7 +180,9 @@ From here, you can inspect the command output of all the data sources and resour
 	
 #### Monitoring the Step Execution
 
-You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. Finally go into the step tab to control its status. You can inspect the model result by clicking on *view logs* and selecting the **stdout** log file.
+You can inspect the fraud detection model execution via the AWS Console. Just login and select the EMR service. Then click on the active cluster name you provide in the **test.tf** terraform configuration file. 
+
+*Finally go into the step tab to control its status. You can inspect the model result by clicking on *view logs* and selecting the **stdout** log file.*
 
 #### Destroy Infrastructure
 
