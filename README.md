@@ -20,7 +20,16 @@ A PySpark fraud detection project on AWS EMR with Terraform
 In the introduction we provide a brief overview of the context we are investigating. After that, we proceed with a step by step guide to replicate this project on your machine. Finally we explain more deeply the organization of the terraform module code and the design choices of our fraud detection algorithm.
 
 ## Introduction
-In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
+In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. 
+
+This is a classic example of an imbalance binary classification problem, where one class (y=1) is outnumbered by the instances of the other class as shown in the table below.
+
+|  Total Records (train_transaction.csv)  | 590540 | % |
+| ------------- | -------------: | -------------: |
+| Un-Fraud Records (IsFraud = 0)   | 569877 | 97% |
+| Fraud Records (IsFraud = 1)  | 20663 | 3% |
+
+We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
 
 Terraform is the infrastructure as code tool from HashiCorp. It is a tool for building, changing, and managing infrastructure in a safe, repeatable way. Operators and Infrastructure teams can use Terraform to manage environments with a configuration language called the HashiCorp Configuration Language (HCL) for human-readable, automated deployments.
 
