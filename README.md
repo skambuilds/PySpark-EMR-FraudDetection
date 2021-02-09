@@ -15,8 +15,7 @@ A PySpark fraud detection project on AWS EMR with Terraform
 	- [Terraform EMR Module](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module)
 	- [Fraud Detection Model](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model)
 	- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
-		- [Qualitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#qualitative-results)
-			- [Cross Validation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation)
+		- [Qualitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#qualitative-results)			
 		- [Quantitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#quantative-results)
 	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
 
@@ -599,7 +598,7 @@ This two options could represent the future improvements of our work.
 
 ##### Cross Validation
 
-Furthermore we performed a cross validation with k = 5 obtaining the following results:
+Furthermore we performed a 5-fold cross validation obtaining the following results:
 
 \- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
 ------------ | :---: | :---: | :---: | :---: | :---:
