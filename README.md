@@ -603,7 +603,7 @@ Furthermore we performed a cross validation with k = 5 obtaining the following r
 
 \- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
 ------------ | :---: | :---: | :---: | :---: | :---:
-**Test Set Range** | (1, 118108) | (118109, 236216) | (236217, 354324) | (354325, 472432) | (472433, 590540)
+**Test Set Range** | 1 - 118108 | 118109 - 236216 | 236217 - 354324 | 354325 - 472432) | 472433 - 590540
 **Test Area Under ROC** | 0.8516 | 0.8573 | 0.8476 | 0.8433 | 0.8445
 **Total Inspections** | 118108 | 118108 | 118108 | 118108 | 118108
 **Successful Predictions** | 114729 | 114799 | 114674 | 114768 | 114691
