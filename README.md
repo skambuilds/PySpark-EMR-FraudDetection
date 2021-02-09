@@ -596,7 +596,7 @@ This two options could represent the future improvements of our work.
 
 ##### Cross Validation
 
-Furthermore we perform a cross validation with k = 5 obtaining the following results:
+Furthermore we performed a cross validation with k = 5 obtaining the following results:
 
 \- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
 ------------ | :---: | :---: | :---: | :---: | :---:
@@ -614,7 +614,7 @@ Furthermore we perform a cross validation with k = 5 obtaining the following res
 **Specificity**  | 0.9986 | 0.9978 | 0.9983 | 0.9981 | 0.9984
 **Miss Rate**  | 0.7874 | 0.7379 | 0.7915 | 0.7791 | 0.7903
 
-We can see that there are not significant variations in the results between the different iterations.
+We can see that there are no significant variations in the results between the different iterations.
 
 #### Quantative results
 
