@@ -22,12 +22,12 @@ In the introduction we provide a brief overview of the context we are investigat
 ## Introduction
 In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. 
 
-This is a classic example of an imbalance binary classification problem, where one class (y=1) is outnumbered by the instances of the other class as shown in the table below.
+This is a classic example of an imbalance binary classification problem, where one class (isFraud=1) is outnumbered by the instances of the other class as shown in the table below.
 
 |  Total Records (train_transaction.csv)  | 590540 | % |
 | ------------- | -------------: | -------------: |
-| Un-Fraud Records (IsFraud = 0)   | 569877 | 97% |
-| Fraud Records (IsFraud = 1)  | 20663 | 3% |
+| Un-Fraud Records (isFraud = 0)   | 569877 | 97% |
+| Fraud Records (isFraud = 1)  | 20663 | 3% |
 
 We use Spark ML Libraries in PySpark and we execute the model script on Amazon AWS EMR. We perform the EMR cluster infrastructure creation and management via Terraform.
 
@@ -593,6 +593,28 @@ In order to contain this effect and consequently improving the performance of th
 2. Analyze and tune the hyperparameters
 
 This two options could represent the future improvements of our work.
+
+##### Cross Validation
+
+Furthermore we perform a cross validation with k = 5 obtaining the following results:
+
+\- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
+------------ | :---: | :---: | :---: | :---: | :---:
+**Test Set Range** | (1, 118108) | (118109, 236216) | (236217, 354324) | (354325, 472432) | (472433, 590540)
+**Test Area Under ROC** | 0.8516 | 0.8573 | 0.8476 | 0.8433 | 0.8445
+**Total Inspections** | 118108 | 118108 | 118108 | 118108 | 118108
+**Successful Predictions** | 114729 | 114799 | 114674 | 114768 | 114691
+**Success Rate (%)** | 97.1390 | 97.1983 | 97.0924 | 97.1720 | 97.1068
+**True Positive** | 885 | 1080 | 866 | 927 | 867
+**False Positive** | 152 | 245 | 187 | 213 | 177
+**True Negative** | 113793 | 113676 | 113809 | 113756 | 113797
+**False Negative** | 3278 | 3042 | 3289 | 3271 | 3268
+**Sensitivity** | 0.2125 | 0.2620 | 0.2084 | 0.2208 | 0.2096
+**Fallout**  | 0.0013 | 0.0021 | 0.0016 | 0.0018 | 0.0015
+**Specificity**  | 0.9986 | 0.9978 | 0.9983 | 0.9981 | 0.9984
+**Miss Rate**  | 0.7874 | 0.7379 | 0.7915 | 0.7791 | 0.7903
+
+We can see that there are not significant variations in the results between the different iterations.
 
 #### Quantative results
 
