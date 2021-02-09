@@ -24,7 +24,7 @@ In the introduction we provide a brief overview of the context we are investigat
 ## Introduction
 In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. 
 
-This is a classic example of an imbalance binary classification problem, where one class (isFraud=1) is outnumbered by the instances of the other class as shown in the table below.
+This is a classic example of an ***imbalance binary classification problem***, where one class (isFraud=1) is outnumbered by the instances of the other class as shown in the table below.
 
 |  Total Records (train_transaction.csv)  | 590540 | % |
 | ------------- | -------------: | -------------: |
