@@ -19,7 +19,7 @@ A PySpark fraud detection project on AWS EMR with Terraform
 		- [Quantitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#quantative-results)
 	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
 
-In the introduction we provide a brief overview of the context we are investigating. After that, we proceed with a step by step guide to replicate this project on your machine. Finally we explain more deeply the organization of the terraform module code and the design choices of our fraud detection algorithm.
+In the introduction we provide a brief overview of the context we are investigating. After that, we proceed with a step by step guide to replicate this project on your machine. Finally we explain more deeply the organization of the terraform module code and the design choices of our fraud detection algorithm providing also a detail report of the results.
 
 ## Introduction
 In this project, we build a machine learning model to predict whether the transactions in the dateset are fraudolent or not. 
@@ -598,13 +598,15 @@ This two options could represent the future improvements of our work.
 
 ##### Cross Validation
 
-Furthermore we performed a 5-fold cross validation obtaining the following results:
+Taking into consideration the Logistic Regression classifier we performed a 5-fold cross validation in two different conditions, without dataset shuffling and with dataset shuffling, obtaining the following results:
+
+**Original Dataset**
 
 \- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
 ------------ | :---: | :---: | :---: | :---: | :---:
 **Test Set Range Min Index** | 1 | 118109 | 236217 | 354325 | 472433
 **Test Set Range Max Index** | 118108 | 236216 | 354324 | 472432 | 590540
-**Test Area Under ROC** | 0.8516 | 0.8573 | 0.8476 | 0.8433 | 0.8445
+**Test Area Under ROC** | **0.8516** | **0.8573** | **0.8476** | **0.8433** | **0.8445**
 **Total Inspections** | 118108 | 118108 | 118108 | 118108 | 118108
 **Successful Predictions** | 114729 | 114799 | 114674 | 114768 | 114691
 **Success Rate (%)** | 97.1390 | 97.1983 | 97.0924 | 97.1720 | 97.1068
@@ -616,8 +618,29 @@ Furthermore we performed a 5-fold cross validation obtaining the following resul
 **Fallout**  | 0.0013 | 0.0021 | 0.0016 | 0.0018 | 0.0015
 **Specificity**  | 0.9986 | 0.9978 | 0.9983 | 0.9981 | 0.9984
 **Miss Rate**  | 0.7874 | 0.7379 | 0.7915 | 0.7791 | 0.7903
+**Model Exectution Time** | **3 min** | **3 min** | **3 min** | **3 min** | **3 min**
 
-We can see that there are no significant variations in the results between the different iterations.
+**Shuffled Dataset**
+
+\- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
+------------ | :---: | :---: | :---: | :---: | :---:
+**Test Set Range Min Index** | 1 | 118109 | 236217 | 354325 | 472433
+**Test Set Range Max Index** | 118108 | 236216 | 354324 | 472432 | 590540
+**Test Area Under ROC** | **0.8402** | **0.8364** | **0.8336** | **0.8488** | **0.8374**
+**Total Inspections** | 118108 | 118108 | 118108 | 118108 | 118108
+**Successful Predictions** | 114660 | 114618 | 114686 | 114787 | 114693
+**Success Rate (%)** | 97.0806 | 97.0450 | 97.1026 | 97.1881 | 97.1085
+**True Positive** | 865 | 910 | 921 | 1069 | 929
+**False Positive** | 208 | 174 | 201 | 315 | 229
+**True Negative** | 113795 | 113708 | 113765 | 113718 | 113764
+**False Negative** | 3240 | 3316 | 3221 | 3006 | 3186
+**Sensitivity** | 0.2107 | 0.2153 | 0.2223 | 0.2623 | 0.0020
+**Fallout**  | 0.0018 | 0.0015 | 0.0017 | 0.0027 | 0.0015
+**Specificity**  | 0.9981 | 0.9984 | 0.9982 | 0.9972| 0.9979
+**Miss Rate**  | 0.7892 | 0.7846 | 0.7776 | 0.7376 | 0.7742
+**Model Exectution Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
+
+We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a shuffled dataset.
 
 #### Quantative results
 
