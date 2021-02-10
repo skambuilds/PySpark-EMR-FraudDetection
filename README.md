@@ -595,7 +595,17 @@ We decided also to perform a cross validation phase implementing two different c
                 print("Train set part 2 - range indexes:", startIndex, rowsNumber)
                 train = train_p1.union(train)
             else:
-                print("Train set - range indexes:", startIndex, rowsNumber)  
+                print("Train set - range indexes:", startIndex, rowsNumber)
+		
+	## LR
+	if logReg:
+		classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
+		classifier_executor(classifier, train, test)
+	
+	# DT
+	if decTree:
+		classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
+		classifier_executor(classifier, train, test)
 
 ### Results and Conclusions
 
@@ -689,7 +699,7 @@ Taking into consideration the Logistic Regression classifier we also performed a
 **Miss Rate**  | 0.7892 | 0.7846 | 0.7776 | 0.7376 | 0.7742
 **Logistic Regression Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
 
-We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section. More info about the cross validation code can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation).
+We can see that there are no significant variations in the results between different iterations. Conversely, comparing the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section. More info about the cross validation code can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation).
 
 #### Quantative results
 
