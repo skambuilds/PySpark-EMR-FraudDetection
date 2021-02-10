@@ -548,6 +548,54 @@ Combining these results we compute the following metrics:
 
 The first two metrics have been chosen because they provide information about the performance in terms of fraudulent transactions correctly classified, while the other two have been chosen in order to evaluate the algorithm performance in terms of correct and incorrect classification of the legitimate transactions.
 
+#### Cross Validation
+
+We decided also to perform a cross validation phase implementing two different conditions. The first one will maintain the original dataset order while the second one will perform a random shuffling of the dataset.
+
+    print("Starting Cross Validation ", datetime.now(timezone.utc))    
+    print("K value: ", k)
+
+    if enableShuffling:
+        print("Before Shuffling:")
+        df.show(n=3)
+        df1 = df.orderBy(rand())
+        w = Window.orderBy('id')
+        df1 = df1.withColumn('id', monotonically_increasing_id()).withColumn('NROW', row_number().over(w))
+        print("After Shuffling")
+        df1.show(n=3)
+    else:
+        w = Window().partitionBy(lit('TransactionID')).orderBy(lit('TransactionID'))       
+        df1 = df.withColumn("NROW", row_number().over(w))
+        print("New column NROW based on TransactionID successfully created")
+
+    rowsNumber = df.count()
+    step = rowsNumber // k
+    print("Step value: ", step)
+
+    for i in range(0, k):
+        minIndex = (i*step)+1
+        maxIndex = (step+minIndex) - 1
+        print("Cross validation - iteration:", i+1)        
+        print("Test set range indexes:", minIndex, maxIndex)
+        test = df1.filter(col("NROW").between(minIndex,maxIndex))
+        print("Test set successfully created")
+
+        if maxIndex == rowsNumber:
+            endIndex = minIndex-1
+            train = df1.filter(col("NROW").between(1,endIndex))
+            print("Train set range indexes:", 1, endIndex)
+        else:
+            startIndex = maxIndex+1
+            train = df1.filter(col("NROW").between(startIndex,rowsNumber))
+            if minIndex > 1:
+                endIndex = minIndex-1
+                train_p1 = df1.filter(col("NROW").between(1,endIndex))
+                print("Train set part 1 - range indexes:", 1, endIndex)
+                print("Train set part 2 - range indexes:", startIndex, rowsNumber)
+                train = train_p1.union(train)
+            else:
+                print("Train set - range indexes:", startIndex, rowsNumber)  
+
 ### Results and Conclusions
 
 The dataset has been split as follows:
@@ -600,7 +648,7 @@ This two options could represent the future improvements of our work.
 
 Taking into consideration the Logistic Regression classifier we performed a 5-fold cross validation in two different conditions, without dataset shuffling and with dataset shuffling, obtaining the following results:
 
-**Original Dataset**
+**Original Dataset:**
 
 \- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
 ------------ | :---: | :---: | :---: | :---: | :---:
@@ -620,7 +668,7 @@ Taking into consideration the Logistic Regression classifier we performed a 5-fo
 **Miss Rate**  | 0.7874 | 0.7379 | 0.7915 | 0.7791 | 0.7903
 **Model Exectution Time** | **3 min** | **3 min** | **3 min** | **3 min** | **3 min**
 
-**Shuffled Dataset**
+**Randomly Shuffled Dataset:**
 
 \- | Iter 1 | Iter 2 | Iter 3 | Iter 4 | Iter 5
 ------------ | :---: | :---: | :---: | :---: | :---:
@@ -640,7 +688,7 @@ Taking into consideration the Logistic Regression classifier we performed a 5-fo
 **Miss Rate**  | 0.7892 | 0.7846 | 0.7776 | 0.7376 | 0.7742
 **Model Exectution Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
 
-We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a shuffled dataset.
+We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section.
 
 #### Quantative results
 
