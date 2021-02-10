@@ -666,7 +666,7 @@ Taking into consideration the Logistic Regression classifier we performed a 5-fo
 **Fallout**  | 0.0013 | 0.0021 | 0.0016 | 0.0018 | 0.0015
 **Specificity**  | 0.9986 | 0.9978 | 0.9983 | 0.9981 | 0.9984
 **Miss Rate**  | 0.7874 | 0.7379 | 0.7915 | 0.7791 | 0.7903
-**Model Exectution Time** | **3 min** | **3 min** | **3 min** | **3 min** | **3 min**
+**Logistic Regression Time** | **3 min** | **3 min** | **3 min** | **3 min** | **3 min**
 
 **Randomly Shuffled Dataset:**
 
@@ -686,7 +686,7 @@ Taking into consideration the Logistic Regression classifier we performed a 5-fo
 **Fallout**  | 0.0018 | 0.0015 | 0.0017 | 0.0027 | 0.0015
 **Specificity**  | 0.9981 | 0.9984 | 0.9982 | 0.9972| 0.9979
 **Miss Rate**  | 0.7892 | 0.7846 | 0.7776 | 0.7376 | 0.7742
-**Model Exectution Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
+**Logistic Regression Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
 
 We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section.
 
