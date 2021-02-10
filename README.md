@@ -598,13 +598,13 @@ We decided also to perform a cross validation phase implementing two different c
                 print("Train set - range indexes:", startIndex, rowsNumber)
         ## LR
         if logReg:
-	    classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
-	    classifier_executor(classifier, train, test)
+            classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
+            classifier_executor(classifier, train, test)
 	    
-	# DT
+        # DT
         if decTree:
-	    classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
-	    classifier_executor(classifier, train, test)
+            classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
+            classifier_executor(classifier, train, test)
 
 ### Results and Conclusions
 
