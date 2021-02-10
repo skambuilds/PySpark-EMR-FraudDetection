@@ -689,7 +689,7 @@ Taking into consideration the Logistic Regression classifier we also performed a
 **Miss Rate**  | 0.7892 | 0.7846 | 0.7776 | 0.7376 | 0.7742
 **Logistic Regression Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
 
-We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section. More info about the cross validation code can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation-2).
+We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section. More info about the cross validation code can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation).
 
 #### Quantative results
 
