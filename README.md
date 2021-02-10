@@ -150,7 +150,7 @@ In this section we clarify how to configure the module.
 	- `step_name` - The name of the step
 	- `step_jar_path` - Path to a JAR file run during the step
 
-More info on the emr module can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module).
+More info about the emr module can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#terraform-emr-module).
 
 ### Step 5: Module Execution
 Now you can use Terraform to create and destroy the cluster. The cluster creation includes a step phase which performs the fraud detection model execution. 
@@ -551,7 +551,7 @@ The first two metrics have been chosen because they provide information about th
 
 #### Cross Validation
 
-We decided also to perform a cross validation phase implementing two different conditions. The first one will maintain the original dataset order while the second one will perform a random shuffling of the dataset.
+We decided also to perform a cross validation phase implementing two different conditions. In particular, before executing the cross validation process, if `enableShuffling` is True we execute a random shuffling of the dataset, otherwise we will maintain the original dataset order established by the `TransactionID` column.
 
     print("Starting Cross Validation ", datetime.now(timezone.utc))    
     print("K value: ", k)
@@ -689,7 +689,7 @@ Taking into consideration the Logistic Regression classifier we also performed a
 **Miss Rate**  | 0.7892 | 0.7846 | 0.7776 | 0.7376 | 0.7742
 **Logistic Regression Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
 
-We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section.
+We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section. More info about the cross validation code can be found [here](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation-2).
 
 #### Quantative results
 
