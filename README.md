@@ -55,8 +55,8 @@ addr1, add2 | Yes | Address
 dist1, dist2 | No | Distance 
 P_emaildomain | Yes | Purchaser email domain 
 R_emaildomain | Yes | Recipient email domain 
-C1-C14 | No | Counting, such as how many addresses are found to be associated with the payment card, etc.
-D1-D15 | No | Timedelta, such as days between previous transaction, etc.
+C1 - C14 | No | Counting, such as how many addresses are found to be associated with the payment card, etc.
+D1 - D15 | No | Timedelta, such as days between previous transaction, etc.
 M1 - M9 | Yes | Match, such as names on card and address, etc. 
 V1 - V339 | No | Vesta engineered rich features, including ranking, counting, and other entity relations.
 
@@ -69,10 +69,6 @@ id_01 - id_11 | No | Masked identity information
 id_12 - id_38 | Yes | Masked identity information
 DeviceType | Yes | Device type such as mobile, desktop or notebook
 DeviceInfo | Yes | Manufacturer and model
-
-Variables in this table are identity information – network connection information (IP, ISP, Proxy, etc) and digital signature (UA/browser/os/version, etc) associated with transactions.
-They're collected by Vesta’s fraud protection system and digital security partners.
-(The field names are masked and pairwise dictionary will not be provided for privacy protection and contract agreement)
 
 You can read more about the data from [this post by the competition host](https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203).
 
