@@ -16,8 +16,8 @@ A PySpark fraud detection project on AWS EMR with Terraform
 	- [Fraud Detection Model](https://github.com/skambuilds/PySpark-EMR-FraudDetection#fraud-detection-model)
 	- [Results and Conclusions](https://github.com/skambuilds/PySpark-EMR-FraudDetection#results-and-conclusions)
 		- [Qualitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#qualitative-results)			
-		- [Quantitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#quantative-results)
-		- [Cross Validation]
+		- [Cross Validation](https://github.com/skambuilds/PySpark-EMR-FraudDetection#cross-validation-1)
+		- [Quantitative Results](https://github.com/skambuilds/PySpark-EMR-FraudDetection#quantative-results)		
 	- [References](https://github.com/skambuilds/PySpark-EMR-FraudDetection#references)
 
 In the introduction we provide a brief overview of the context we are investigating. After that, we proceed with a step by step guide to replicate this project on your machine. Finally we explain more deeply the organization of the terraform module code and the design choices of our fraud detection algorithm providing also a detail report of the results.
@@ -645,23 +645,6 @@ In order to contain this effect and consequently improving the performance of th
 
 This two options could represent the future improvements of our work.
 
-#### Quantative results
-
-The following table indicates the execution time of our algorithm in three different cluster configurations:
-\- | Configuration 1 | Configuration 2 | Configuration 3
------------- | :---: | :---: | :---: 
-**Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
-**# Master instances** | 1 | 1 | 1
-**# Core instances** | 2 | 4 | 6
-**Pre-processing** | 11 min | 8 min | 7 min
-**Logistic Regression** | 3 min | 2 min | 2 min
-**LR Metrics Calculation**  | 11 min | 6 min | 5,5 min
-**Decision Tree**  | 8 min | 5 min | 3 min
-**DT Metrics Calculation**  | 11 min | 6 min | 5,5 min
-**Total Execution Time** | **44 min** | **27 min** | **23 min**
-
-We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
-
 #### Cross Validation
 
 Taking into consideration the Logistic Regression classifier we also performed a 5-fold cross validation in two different conditions, without dataset shuffling and with dataset shuffling, obtaining the following results:
@@ -707,6 +690,23 @@ Taking into consideration the Logistic Regression classifier we also performed a
 **Logistic Regression Time** | **5 min** | **5 min** | **5 min** | **5 min** | **5 min**
 
 We can see that there are no significant variations in the results between different iterations. Conversely, compering the two different conditions, we can notice a little perfomance drop regarding the Area Under ROC and the Model Execution Time using a randomly shuffled dataset. The cross validation has been executed with the "Configuration 3" of the cluster which is indicated in the next section.
+
+#### Quantative results
+
+The following table indicates the execution time of our algorithm in three different cluster configurations:
+\- | Configuration 1 | Configuration 2 | Configuration 3
+------------ | :---: | :---: | :---: 
+**Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
+**# Master instances** | 1 | 1 | 1
+**# Core instances** | 2 | 4 | 6
+**Pre-processing** | 11 min | 8 min | 7 min
+**Logistic Regression** | 3 min | 2 min | 2 min
+**LR Metrics Calculation**  | 11 min | 6 min | 5,5 min
+**Decision Tree**  | 8 min | 5 min | 3 min
+**DT Metrics Calculation**  | 11 min | 6 min | 5,5 min
+**Total Execution Time** | **44 min** | **27 min** | **23 min**
+
+We can see that passing from the first to the second configuration there is an evident improvement in the execution time, while from the second to the third configuration the improvement is less significant.
 
 ### References
 
