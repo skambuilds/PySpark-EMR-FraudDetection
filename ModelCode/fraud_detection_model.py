@@ -12,7 +12,9 @@ from pyspark.sql.functions import udf
 from pyspark.ml.classification import LogisticRegression, DecisionTreeClassifier, RandomForestClassifier, GBTClassifier
 from pyspark.ml.evaluation import BinaryClassificationEvaluator
 from pyspark.sql import SparkSession
-
+from pyspark.sql.functions import lit,row_number,col
+from pyspark.sql.window import Window
+from datetime import datetime, date, time, timezone
 
 
 if __name__ == "__main__":
@@ -20,6 +22,8 @@ if __name__ == "__main__":
         .builder\
         .appName("ml-transactions")\
         .getOrCreate()
+
+    print("Pre-processing start time: ", datetime.now(timezone.utc))
 
     # PARAMETERS    
     enableFeatSelection = True
@@ -29,10 +33,12 @@ if __name__ == "__main__":
     enableTargetStringConv = True
     enableStandardization = True
     enableClassWeights = False
+    enableShuffling = True
+    k = 5
     
     # CLASSIFIERS SELECTION    
     logReg = True
-    decTree = True    
+    decTree = False    
     
     # FILE LOCATIONS    
     if awsSourceLocation:
@@ -194,8 +200,8 @@ if __name__ == "__main__":
     print ("train_transaction creation: %d" % count)
     
     # CATEGORICAL COLUMNS STRING CASTING
-    for col in categoricalColumns:
-        train_transaction = train_transaction.withColumn(col, train_transaction[col].cast(StringType()))
+    for _col in categoricalColumns:
+        train_transaction = train_transaction.withColumn(_col, train_transaction[_col].cast(StringType()))
     
     # NULL VALUES SUBSTITUTION FOR CATEGORICAL COLUMNS
     for _col in categoricalColumns:
@@ -271,10 +277,10 @@ if __name__ == "__main__":
     pipeline = Pipeline(stages = stages)
     pipelineModel = pipeline.fit(train_transaction)
     df = pipelineModel.transform(train_transaction)
-    selectedCols = ['label', 'features'] + cols
+    #selectedCols = ['label', 'features'] + cols
+    selectedCols = ['label', 'features', 'isFraud', 'TransactionID']
     df = df.select(selectedCols)
-    df = df.drop("TransactionID")
-    print("TransactionID column has been dropped!")
+    print("Columns selection complete.")
     df.printSchema()
     
     print("Hot encoding complete!")
@@ -285,30 +291,22 @@ if __name__ == "__main__":
     
     #### DATASET SPLITTING ####
     
-    train, test = df.randomSplit([0.7, 0.3], seed=2021)
-    print("Training Dataset Count: " + str(train.count()))
-    print("Test Dataset Count: " + str(test.count()))
+    #train, test = df.randomSplit([0.7, 0.3], seed=2021)
+    #print("Training Dataset Count: " + str(train.count()))
+    #print("Test Dataset Count: " + str(test.count()))
     
-    if enableClassWeights:
-        dataset_size = float(train.select("isFraud").count())
-        numPositives = train.select("isFraud").where("isFraud == 'yes'").count()
-        per_ones = (float(numPositives)/float(dataset_size))*100
-        numNegatives = float(dataset_size-numPositives)
-        BalancingRatio = numNegatives/dataset_size
-        print('The number of ones are: {}'.format(numPositives))
-        print('Percentage of ones are: {}'.format(per_ones))
-        print('BalancingRatio: {}'.format(BalancingRatio))
-
-        train = train.withColumn("classWeights", when(train.isFraud == 'yes',BalancingRatio).otherwise(1-BalancingRatio))
-        train.select("classWeights").where("isFraud == 'yes'").show(5)
-        train.select("classWeights").where("isFraud == 'no'").show(5)
+    print("Pre-processing end time: ", datetime.now(timezone.utc))    
 
     #### MODEL TRAINING AND EXECUTION ####
     
     def classifier_executor(classifier, train, test):
+        print("Starting model training...")
         model = classifier.fit(train)
+        print("Model training complete, performing predictions...")
         predictions = model.transform(test)
+        print("Predictions phase complete")
         predictions.select('label', 'rawPrediction', 'prediction', 'probability').show(10)
+        print("Model end time: ", datetime.now(timezone.utc))
         metrics_calc(predictions)
     
     def metrics_calc(predictions):
@@ -341,17 +339,79 @@ if __name__ == "__main__":
         print("Specificity: " + str(specificity))
         print("Miss_rate: " + str(miss_rate))
 
-    ## LR
-    if logReg:
-        classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
-        classifier_executor(classifier, train, test)
+    # CROSS VALIDATION #
+    print("Starting Cross Validation ", datetime.now(timezone.utc))    
+    print("K value: ", k)
+
+    if enableShuffling:
+        print("Before Shuffling:")
+        df.show(n=3)
+        df1 = df.orderBy(rand())
+        w = Window.orderBy('id')
+        df1 = df1.withColumn('id', monotonically_increasing_id()).withColumn('NROW', row_number().over(w))
+        print("After Shuffling")
+        df1.show(n=3)
+    else:
+        w = Window().partitionBy(lit('TransactionID')).orderBy(lit('TransactionID'))       
+        df1 = df.withColumn("NROW", row_number().over(w))
+        print("New column NROW based on TransactionID successfully created")
+
+    rowsNumber = df.count()
+    step = rowsNumber // k
+    print("Step value: ", step)
+
+    for i in range(0, k):        
+        minIndex = (i*step)+1
+        maxIndex = (step+minIndex) - 1
+        print("Cross validation - iteration:", i+1)        
+        print("Test set range indexes:", minIndex, maxIndex)
+        test = df1.filter(col("NROW").between(minIndex,maxIndex))
+        print("Test set successfully created")
+
+        if maxIndex == rowsNumber:
+            endIndex = minIndex-1
+            train = df1.filter(col("NROW").between(1,endIndex))
+            print("Train set range indexes:", 1, endIndex)
+        else:
+            startIndex = maxIndex+1
+            train = df1.filter(col("NROW").between(startIndex,rowsNumber))
+            if minIndex > 1:
+                endIndex = minIndex-1
+                train_p1 = df1.filter(col("NROW").between(1,endIndex))
+                print("Train set part 1 - range indexes:", 1, endIndex)
+                print("Train set part 2 - range indexes:", startIndex, rowsNumber)
+                train = train_p1.union(train)
+            else:
+                print("Train set - range indexes:", startIndex, rowsNumber)        
+
         if enableClassWeights:
-            classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', weightCol = 'classWeights', maxIter=10)
+            dataset_size = float(train.select("isFraud").count())
+            numPositives = train.select("isFraud").where("isFraud == 'yes'").count()
+            per_ones = (float(numPositives)/float(dataset_size))*100
+            numNegatives = float(dataset_size-numPositives)
+            BalancingRatio = numNegatives/dataset_size
+            print('The number of ones are: {}'.format(numPositives))
+            print('Percentage of ones are: {}'.format(per_ones))
+            print('BalancingRatio: {}'.format(BalancingRatio))
+
+            train = train.withColumn("classWeights", when(train.isFraud == 'yes',BalancingRatio).otherwise(1-BalancingRatio))
+            train.select("classWeights").where("isFraud == 'yes'").show(5)
+            train.select("classWeights").where("isFraud == 'no'").show(5)
+
+        ## LR
+        if logReg:
+            print("LogisticRegression start time: ", datetime.now(timezone.utc))
+            classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', maxIter=10)
+            classifier_executor(classifier, train, test)
+            if enableClassWeights:
+                classifier = LogisticRegression(featuresCol = 'features', labelCol = 'label', weightCol = 'classWeights', maxIter=10)
+                classifier_executor(classifier, train, test)
+
+        # DT
+        if decTree:
+            print("DecisionTree start time: ", datetime.now(timezone.utc))
+            classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
             classifier_executor(classifier, train, test)
 
-    # DT
-    if decTree:
-        classifier = DecisionTreeClassifier(featuresCol = 'features', labelCol = 'label', maxDepth = 3)
-        classifier_executor(classifier, train, test)
-
+    print("Application end time: ", datetime.now(timezone.utc))
     spark.stop()
