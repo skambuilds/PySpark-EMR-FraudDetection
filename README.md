@@ -40,22 +40,40 @@ We use a dataset from [IEEE-CIS Fraud Detection competition](https://www.kaggle.
 The purpose of the competition is predicting the probability that an online transaction is fraudulent, as denoted by the binary target isFraud.
 The data is broken into two files identity and transaction, which are joined by TransactionID. Not all transactions have corresponding identity information.
 
-Categorical Features - Transaction:
+### Features Overview
 
-    ProductCD
-    card1 - card6
-    addr1, addr2
-    P_emaildomain
-    R_emaildomain
-    M1 - M9
+#### train_transaction.csv - 590540 records and 394 features
 
-Categorical Features - Identity:
+ Name  | Categorical | Description
+------------ | :--- | :---
+TransactionID | No | Transaction identifier
+TransactionDT | No | Timedelta from a given reference datetime (not an actual timestamp) 
+TransactionAMT | No | Transaction payment amount in USD 
+ProductCD | Yes | Product code, the product for each transaction 
+card1 - card6  | Yes | Payment card information, such as card type, card category, issue bank, country, etc. 
+addr1, add2 | Yes | Address 
+dist1, dist2 | No | Distance 
+P_emaildomain | Yes | Purchaser email domain 
+R_emaildomain | Yes | Recipient email domain 
+C1-C14 | No | Counting, such as how many addresses are found to be associated with the payment card, etc.
+D1-D15 | No | Timedelta, such as days between previous transaction, etc.
+M1 - M9 | Yes | Match, such as names on card and address, etc. 
+V1 - V339 | No | Vesta engineered rich features, including ranking, counting, and other entity relations.
 
-    DeviceType
-    DeviceInfo
-    id_12 - id_38
+#### train_identity.csv - 144233 records and 41 features
 
-The TransactionDT feature is a timedelta from a given reference datetime (not an actual timestamp).
+ Name  | Categorical | Description
+------------ | :--- | :---
+TransactionID | No | Transaction identifier
+id_01 - id_11 | No | Masked identity information
+id_12 - id_38 | Yes | Masked identity information
+DeviceType | Yes | Device type such as mobile, desktop or notebook
+DeviceInfo | Yes | Manufacturer and model
+
+Variables in this table are identity information – network connection information (IP, ISP, Proxy, etc) and digital signature (UA/browser/os/version, etc) associated with transactions.
+They're collected by Vesta’s fraud protection system and digital security partners.
+(The field names are masked and pairwise dictionary will not be provided for privacy protection and contract agreement)
+
 You can read more about the data from [this post by the competition host](https://www.kaggle.com/c/ieee-fraud-detection/discussion/101203).
 
 ## How to replicate this project
