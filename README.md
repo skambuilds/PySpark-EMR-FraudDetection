@@ -717,6 +717,7 @@ We can see that there are no significant variations in the results between diffe
 #### Quantative results
 
 The following table indicates the execution time of our algorithm in three different cluster configurations:
+
 \- | Configuration 1 | Configuration 2 | Configuration 3
 ------------ | :---: | :---: | :---: 
 **Instance type** | m5.xlarge | m5.xlarge | m5.xlarge
